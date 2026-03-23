@@ -658,8 +658,36 @@ textarea{resize:vertical;min-height:60px;}
   .idx-grid{grid-template-columns:1fr!important;}
 
   /* DASHBOARD grids */
-  .db-row{flex-direction:column!important;}
+  .db-row{grid-template-columns:1fr!important;gap:12px!important;}
+  .db-row-3{grid-template-columns:1fr!important;gap:12px!important;}
   .db-panel{width:100%!important;}
+
+  /* DASHBOARD hero */
+  .db-hero{grid-template-columns:1fr!important;gap:8px!important;padding:1rem 0 .875rem!important;margin-bottom:1.25rem!important;}
+  .db-hero-right{text-align:left!important;}
+  .db-hero-cota{font-size:32px!important;}
+  .db-hero-meta{flex-wrap:wrap!important;gap:8px 16px!important;}
+  .db-delta-pill{font-size:13px!important;padding:4px 10px!important;}
+  .db-competencia{display:none!important;}
+  .db-timestamp{display:none!important;}
+
+  /* DASHBOARD KPI strip */
+  .db-kpi-strip{grid-template-columns:1fr 1fr!important;gap:8px!important;}
+  .db-kpi-val{font-size:20px!important;}
+
+  /* DASHBOARD cards inner */
+  .db-gauge-outer{flex-direction:column!important;gap:10px!important;align-items:flex-start!important;}
+  .db-gauge-outer svg{width:100%!important;max-width:220px!important;align-self:center!important;}
+  .db-gauge-info{width:100%!important;}
+  .db-donut-outer{flex-direction:column!important;gap:10px!important;align-items:center!important;}
+  .db-donut-outer svg{max-width:160px!important;}
+  .db-legend{flex-direction:row!important;flex-wrap:wrap!important;gap:6px 12px!important;}
+  .db-fr-outer{flex-direction:column!important;gap:10px!important;align-items:center!important;}
+  .db-fr-right{width:100%!important;}
+  .db-inad-cols{height:70px!important;}
+  .db-c{padding:1rem!important;}
+  .db-line-svg{height:80px!important;}
+  .db-status-tag{font-size:10px!important;padding:3px 8px!important;}
 
   /* MODAL: full screen */
   .modal{width:100%!important;max-width:100%!important;border-radius:var(--r) var(--r) 0 0!important;position:fixed!important;bottom:0!important;top:auto!important;}
@@ -5087,6 +5115,15 @@ function navPage(page, btn){
   }
 })();
 
+
+// ── PWA: Service Worker + Install prompt ──
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg=>console.log('SW registered:', reg.scope))
+      .catch(err=>console.warn('SW failed:', err));
+  });
+}
 
 // ── PWA: Install prompt ──
 (function(){
