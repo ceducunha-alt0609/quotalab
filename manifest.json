@@ -1,8 +1,9 @@
 {
-  "name": "QuotaLab — Laboratório de análise condominial",
+  "name": "QuotaLab — Gestão Condominial",
   "short_name": "QuotaLab",
-  "description": "Laboratório de análise financeira condominial para síndicos",
-  "start_url": "./index.html",
+  "description": "Laboratório de análise condominial: simulações, cota calculada, comunicados e muito mais.",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#0a0a0f",
@@ -10,24 +11,30 @@
   "lang": "pt-BR",
   "categories": ["finance", "productivity", "utilities"],
   "icons": [
-    { "src": "icons/icon-72x72.png",   "sizes": "72x72",   "type": "image/png" },
-    { "src": "icons/icon-76x76.png",   "sizes": "76x76",   "type": "image/png" },
-    { "src": "icons/icon-114x114.png", "sizes": "114x114", "type": "image/png" },
-    { "src": "icons/icon-120x120.png", "sizes": "120x120", "type": "image/png" },
-    { "src": "icons/icon-144x144.png", "sizes": "144x144", "type": "image/png" },
-    { "src": "icons/icon-152x152.png", "sizes": "152x152", "type": "image/png" },
-    { "src": "icons/icon-180x180.png", "sizes": "180x180", "type": "image/png" },
     { "src": "icons/icon-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "icons/icon-256x256.png", "sizes": "256x256", "type": "image/png" },
-    { "src": "icons/icon-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    { "src": "icons/icon-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/icon-180x180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "icons/icon-152x152.png", "sizes": "152x152", "type": "image/png" },
+    { "src": "icons/icon-144x144.png", "sizes": "144x144", "type": "image/png" },
+    { "src": "icons/icon-120x120.png", "sizes": "120x120", "type": "image/png" }
   ],
   "screenshots": [
+    { "src": "splashes/splash-iphone.png", "sizes": "1170x2532", "type": "image/png", "form_factor": "narrow" }
+  ],
+  "shortcuts": [
     {
-      "src": "splashes/splash-android-fhd.png",
-      "sizes": "1080x1920",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "QuotaLab — Dashboard"
+      "name": "Simulações",
+      "short_name": "Simular",
+      "description": "Abrir simulações de reajuste",
+      "url": "/?page=simulacoes",
+      "icons": [{ "src": "icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Abrir painel principal",
+      "url": "/?page=dashboard",
+      "icons": [{ "src": "icons/icon-192x192.png", "sizes": "192x192" }]
     }
   ]
 }

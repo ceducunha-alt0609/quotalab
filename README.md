@@ -1,99 +1,142 @@
-# QuotaLab
+# QuotaLab — Laboratório de Análise Condominial
 
-**Laboratório de análise financeira condominial**
-
-Ferramenta completa para síndicos calcularem, analisarem e apresentarem cotas condominiais. 100% client-side — sem servidor, sem cadastro, funciona offline.
+> Simulações de reajuste, cota calculada, comunicado para moradores e muito mais.
 
 ---
 
-## Funcionalidades
+## 🚀 Deploy no GitHub Pages (recomendado)
 
-| Categoria | Funcionalidades |
-|-----------|----------------|
-| **Cálculo** | Cota com breakdown completo · Rateio igualitário ou por fração ideal · Rateios extras parcelados |
-| **Análise** | Fundo de Reserva com juros compostos · Comparativo sem/com rendimento · Calculadora de inadimplência por unidade |
-| **Índices** | IPCA · IGP-M · INPC · IPC-Fipe · Salário mínimo · Busca automática via API do Banco Central |
-| **Compartilhamento** | Link com estado completo em base64 · WhatsApp · E-mail |
-| **GitHub Sync** | Sincronização via Gist privado · Enviar e receber dados entre dispositivos |
-| **IA** | Assistente com contexto do cálculo · Sugestão de conteúdo para impressão (requer chave Claude API) |
-| **Impressão** | Resumo configurável para assembleia · Seleção de seções · Campo de observações |
-| **Exportação** | PDF circular · Carta ao morador · Export/Import JSON |
-| **PWA** | Instalável no celular e desktop · Funciona offline |
+### 1. Criar repositório
+```bash
+# No GitHub, crie um repositório público chamado "quotalab"
+# Depois, no seu computador:
+
+git clone https://github.com/SEU_USUARIO/quotalab.git
+cd quotalab
+```
+
+### 2. Copiar os arquivos
+Copie todos os arquivos deste projeto para dentro da pasta `quotalab/`.
+
+### 3. Subir para o GitHub
+```bash
+git add .
+git commit -m "feat: deploy inicial QuotaLab"
+git push origin main
+```
+
+### 4. Ativar GitHub Pages
+- Acesse seu repositório no GitHub
+- Vá em **Settings → Pages**
+- Em **Source**, selecione **GitHub Actions**
+- O workflow `.github/workflows/deploy.yml` fará o deploy automaticamente
+
+### 5. Acessar o app
+Após o deploy (~ 1 minuto), acesse:
+```
+https://SEU_USUARIO.github.io/quotalab/
+```
 
 ---
 
-## Como usar
+## 📱 Instalar como app (PWA)
 
-Abra `index.html` diretamente no navegador — não precisa de servidor.
+### iPhone / iPad
+1. Abra o link no **Safari**
+2. Toque no botão **Compartilhar** (quadrado com seta)
+3. Role até **"Adicionar à Tela de Início"**
+4. Toque em **Adicionar**
 
-### Publicar no GitHub Pages
+### Android
+1. Abra o link no **Chrome**
+2. Toque no menu **(⋮)** no canto superior direito
+3. Toque em **"Adicionar à tela inicial"**
+4. Confirme
 
-1. Fork ou clone este repositório
-2. Vá em **Settings → Pages**
-3. Source: **Deploy from branch → main → / (root)**
-4. Acesse `https://seu-usuario.github.io/quotalab`
+### PC (Windows / Mac / Linux)
+1. Abra o link no **Chrome** ou **Edge**
+2. Clique no ícone de **instalação** na barra de endereço (ícone de computador com seta)
+3. Clique em **Instalar**
+4. O app abrirá como janela independente
 
 ---
 
-## Estrutura do repositório
+## 💻 Rodar localmente (sem internet)
+
+### Opção A — Python (mais simples)
+```bash
+# Na pasta do projeto:
+python3 -m http.server 8080
+# Acesse: http://localhost:8080
+```
+
+### Opção B — Node.js
+```bash
+npx serve .
+# Acesse: http://localhost:3000
+```
+
+### Opção C — VS Code
+Instale a extensão **Live Server** e clique em "Go Live".
+
+> ⚠️ Não abra o `index.html` diretamente pelo navegador (file://) — o Service Worker e o manifest precisam de um servidor HTTP.
+
+---
+
+## 📁 Estrutura do projeto
 
 ```
 quotalab/
-├── index.html                      # App completo (single-file)
-├── manifest.json                   # PWA manifest
-├── README.md
-├── LICENSE
-├── .gitignore
+├── index.html              # App principal (single-file)
+├── manifest.json           # Configuração PWA
+├── sw.js                   # Service Worker (cache offline)
 ├── icons/
-│   ├── icon-72x72.png
-│   ├── icon-76x76.png
-│   ├── icon-114x114.png
-│   ├── icon-120x120.png
-│   ├── icon-144x144.png
-│   ├── icon-152x152.png
-│   ├── icon-180x180.png             ← Apple Touch Icon
-│   ├── icon-192x192.png             ← PWA Android / Chrome
-│   ├── icon-256x256.png
-│   └── icon-512x512.png             ← App Store / Play Store
-└── splashes/
-    ├── splash-iphone-max.png        (1242×2688 — iPhone 14 Pro Max)
-    ├── splash-iphone.png            (750×1334 — iPhone 8/SE)
-    ├── splash-ipad-pro.png          (2048×2732 — iPad Pro 12.9")
-    └── splash-android-fhd.png       (1080×1920 — Android FHD)
+│   ├── icon-512x512.png    # Ícone principal
+│   ├── icon-192x192.png    # Android / PWA
+│   ├── icon-180x180.png    # iOS (iPhone Retina)
+│   ├── icon-152x152.png    # iPad Retina
+│   ├── icon-144x144.png    # Android HDPI
+│   └── icon-120x120.png    # iPhone legacy
+├── splashes/
+│   ├── splash-iphone.png       # iPhone 14/15
+│   ├── splash-iphone-max.png   # iPhone 14/15 Plus / Pro Max
+│   └── splash-ipad-pro.png     # iPad Pro 12.9"
+├── .github/
+│   └── workflows/
+│       └── deploy.yml      # Auto-deploy para GitHub Pages
+└── README.md               # Este arquivo
 ```
 
 ---
 
-## Instalação como PWA
+## 🔒 Dados e privacidade
 
-| Plataforma | Instrução |
-|-----------|-----------|
-| iOS Safari | Compartilhar → Adicionar à Tela de Início |
-| Android Chrome | Menu ⋮ → Adicionar à tela inicial |
-| Desktop Chrome/Edge | Ícone ⊕ na barra de endereço → Instalar QuotaLab |
-
----
-
-## Sincronização GitHub
-
-1. Gere um Personal Access Token em [github.com/settings/tokens](https://github.com/settings/tokens/new?scopes=gist&description=QuotaLab) com escopo `gist`
-2. Abra **Configurações → GitHub** no app
-3. Cole o token e clique Salvar
-4. Use **↑ Enviar** para salvar dados e **↓ Receber** para restaurar
+- Todos os dados são salvos **localmente no navegador** (localStorage)
+- Nenhum dado é enviado para servidores externos
+- A autenticação Supabase é opcional — o app funciona sem ela
+- O Service Worker mantém o app funcional **offline**
 
 ---
 
-## Tecnologias
+## 🛠️ Atualizações
 
-- HTML5 / CSS3 / JavaScript puro — zero dependências de framework
-- [jsPDF](https://github.com/parallax/jsPDF) + jsPDF-AutoTable — geração de PDF
-- [API Banco Central do Brasil](https://dadosabertos.bcb.gov.br/) — índices econômicos
-- [API Anthropic Claude](https://anthropic.com) — assistente IA (opcional)
-- localStorage — persistência local
-- GitHub Gist API — sincronização entre dispositivos
+Para atualizar o app após mudanças:
+```bash
+# Substitua o index.html pelo novo arquivo
+# Depois:
+git add index.html
+git commit -m "chore: atualizar app"
+git push origin main
+```
+O GitHub Actions fará o redeploy automaticamente em ~1 minuto.
+
+Para forçar a atualização nos dispositivos instalados, atualize a versão do cache em `sw.js`:
+```js
+const CACHE_NAME = 'quotalab-v2'; // incrementar versão
+```
 
 ---
 
-## Licença
+## 📞 Suporte
 
-MIT — uso livre, pessoal e comercial.
+Desenvolvido com ❤️ para simplificar a gestão condominial.

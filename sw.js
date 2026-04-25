@@ -1,52 +1,123 @@
-const CACHE = 'quotalab-v1';
-const ASSETS = [
-  './',
-  './index.html',
-  './manifest.json',
-  './icons/icon-192x192.png',
-  './icons/icon-512x512.png',
-  'https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap',
+// QuotaLab Service Worker
+// Estratégia: cache-first para assets estáticos, network-first para o HTML principal
+
+const CACHE_NAME = 'quotalab-v1';
+const CACHE_VERSION = '1.0.0';
+
+// Assets a cachear imediatamente na instalação
+const PRECACHE_ASSETS = [
+  '/',
+  '/index.html',
+  '/manifest.json',
+  '/icons/icon-192x192.png',
+  '/icons/icon-512x512.png',
+  '/icons/icon-180x180.png',
+  '/icons/icon-152x152.png',
+  '/icons/icon-144x144.png',
+  '/icons/icon-120x120.png',
 ];
 
-// Install — cache core assets
-self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting())
+// CDNs externos — cache on demand, sem falha se offline
+const EXTERNAL_CACHE = 'quotalab-external-v1';
+const EXTERNAL_ORIGINS = [
+  'fonts.googleapis.com',
+  'fonts.gstatic.com',
+  'cdnjs.cloudflare.com',
+  'cdn.jsdelivr.net',
+];
+
+// ── INSTALL: precache assets locais ──────────────────────────────────────────
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(PRECACHE_ASSETS))
+      .then(() => self.skipWaiting())
+      .catch(err => console.warn('[SW] Precache parcial:', err))
   );
 });
 
-// Activate — delete old caches
-self.addEventListener('activate', e => {
-  e.waitUntil(
+// ── ACTIVATE: limpar caches antigos ──────────────────────────────────────────
+self.addEventListener('activate', event => {
+  event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+      Promise.all(
+        keys
+          .filter(k => k !== CACHE_NAME && k !== EXTERNAL_CACHE)
+          .map(k => caches.delete(k))
+      )
     ).then(() => self.clients.claim())
   );
 });
 
-// Fetch — cache-first for local assets, network-first for API calls
-self.addEventListener('fetch', e => {
-  const url = new URL(e.request.url);
+// ── FETCH: estratégia por tipo de recurso ─────────────────────────────────────
+self.addEventListener('fetch', event => {
+  const { request } = event;
+  const url = new URL(request.url);
 
-  // Never cache: Anthropic API, GitHub API, BCB API
-  const skipCache = ['api.anthropic.com', 'api.github.com', 'api.bcb.gov.br']
-    .some(h => url.hostname.includes(h));
-  if(skipCache){ e.respondWith(fetch(e.request)); return; }
+  // Ignorar requisições não-GET e Supabase (sempre online)
+  if (request.method !== 'GET') return;
+  if (url.hostname.includes('supabase')) return;
 
-  // Cache-first for everything else
-  e.respondWith(
-    caches.match(e.request).then(cached => {
-      if(cached) return cached;
-      return fetch(e.request).then(res => {
-        // Only cache valid same-origin or CORS responses
-        if(!res || res.status !== 200) return res;
-        const clone = res.clone();
-        caches.open(CACHE).then(c => c.put(e.request, clone));
-        return res;
-      }).catch(() => {
-        // Offline fallback: return index.html for navigation requests
-        if(e.request.mode === 'navigate') return caches.match('./index.html');
-      });
-    })
-  );
+  // Fontes e CDN externos — cache on demand (stale-while-revalidate)
+  if (EXTERNAL_ORIGINS.some(origin => url.hostname.includes(origin))) {
+    event.respondWith(staleWhileRevalidate(request, EXTERNAL_CACHE));
+    return;
+  }
+
+  // HTML principal — network-first (sempre tenta buscar versão nova)
+  if (url.pathname === '/' || url.pathname.endsWith('.html')) {
+    event.respondWith(networkFirst(request));
+    return;
+  }
+
+  // Assets locais (ícones, manifest, etc.) — cache-first
+  event.respondWith(cacheFirst(request));
+});
+
+// ── ESTRATÉGIAS ───────────────────────────────────────────────────────────────
+async function cacheFirst(request) {
+  const cached = await caches.match(request);
+  if (cached) return cached;
+  try {
+    const response = await fetch(request);
+    if (response.ok) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch {
+    return new Response('Offline', { status: 503 });
+  }
+}
+
+async function networkFirst(request) {
+  try {
+    const response = await fetch(request);
+    if (response.ok) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch {
+    const cached = await caches.match(request);
+    return cached || new Response('Offline', { status: 503 });
+  }
+}
+
+async function staleWhileRevalidate(request, cacheName) {
+  const cache = await caches.open(cacheName);
+  const cached = await cache.match(request);
+  const fetchPromise = fetch(request).then(response => {
+    if (response.ok) cache.put(request, response.clone());
+    return response;
+  }).catch(() => null);
+  return cached || fetchPromise;
+}
+
+// ── MENSAGENS ─────────────────────────────────────────────────────────────────
+self.addEventListener('message', event => {
+  if (event.data?.action === 'skipWaiting') self.skipWaiting();
+  if (event.data?.action === 'clearCache') {
+    caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))));
+  }
 });

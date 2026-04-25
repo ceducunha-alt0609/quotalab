@@ -41,6 +41,7 @@ document.documentElement.setAttribute('data-role', QL_ROLE);
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.6.0/jspdf.plugin.autotable.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
 <style>
 /* ── EMBEDDED FONTS ── */
@@ -544,6 +545,184 @@ textarea{resize:vertical;min-height:60px;}
 /* SIMULADOR */
 .sim-track{margin-bottom:10px;}
 .sim-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px;}
+/* ── SIMULAÇÕES PAGE ── */
+.simp-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px;}
+.simp-kpi{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;transition:border-color .2s,background .2s;}
+.simp-kpi-l{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;}
+.simp-kpi-v{font-family:'DM Serif Display',serif;font-size:26px;color:var(--text);}
+.simp-kpi-s{font-size:11px;color:var(--text3);margin-top:3px;}
+.simp-scenarios{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px;}
+.simp-scenario{border-radius:var(--r);padding:16px;border:2px solid transparent;transition:all .15s;position:relative;}
+.simp-scenario.sem{background:rgba(248,81,73,.07);border-color:rgba(248,81,73,.3);}
+.simp-scenario.ipca{background:rgba(210,153,34,.07);border-color:rgba(210,153,34,.3);}
+.simp-scenario.custom{background:rgba(63,185,80,.07);border-color:rgba(63,185,80,.3);}
+.simp-scenario.nec{background:rgba(56,139,253,.07);border-color:rgba(56,139,253,.3);}
+.simp-scenario.rec{background:rgba(57,197,207,.07);border-color:rgba(57,197,207,.35);}
+.simp-scen-badge{display:inline-block;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;padding:2px 7px;border-radius:20px;margin-bottom:8px;}
+.simp-scen-badge.sem{background:rgba(248,81,73,.2);color:var(--red);}
+.simp-scen-badge.ipca{background:rgba(210,153,34,.2);color:var(--amber);}
+.simp-scen-badge.custom{background:rgba(63,185,80,.2);color:var(--green);}
+.simp-scen-badge.nec{background:rgba(56,139,253,.18);color:var(--blue2);}
+.simp-scen-badge.rec{background:rgba(57,197,207,.18);color:var(--teal);}
+.simp-scen-title{font-size:13px;font-weight:600;margin-bottom:2px;}
+.simp-scen-cota{font-family:'DM Serif Display',serif;font-size:22px;margin:8px 0 2px;}
+.simp-scen-sub{font-size:11px;color:var(--text3);}
+.simp-scen-delta{font-size:12px;font-weight:600;margin-top:6px;}
+.simp-controls{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:18px;}
+/* ── Breakdown composição ── */
+.simp-breakdown{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:18px;}
+.simp-bk-row{display:grid;grid-template-columns:180px 1fr 52px 88px;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);cursor:default;transition:background .12s;border-radius:var(--rs);}
+.simp-bk-row:last-child{border-bottom:none;}
+.simp-bk-row:hover{background:var(--bg4);}
+.simp-bk-name{font-size:12px;color:var(--text2);display:flex;align-items:center;gap:6px;}
+.simp-bk-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.simp-bk-bar-wrap{height:8px;background:var(--bg4);border-radius:4px;overflow:hidden;}
+.simp-bk-bar-fill{height:100%;border-radius:4px;transition:width .4s ease;}
+.simp-bk-pct{font-size:11px;font-weight:600;color:var(--text3);text-align:right;}
+.simp-bk-val{font-size:12px;font-weight:600;text-align:right;}
+.simp-bk-total{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:2px solid var(--border);}
+.simp-bk-total-label{font-size:12px;font-weight:700;color:var(--text);}
+.simp-bk-total-val{font-size:16px;font-weight:700;font-family:'DM Serif Display',serif;color:var(--blue2);}
+.simp-bk-unid{font-size:11px;color:var(--text3);margin-top:1px;}
+.simp-ctrl-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.simp-ctrl-label{font-size:12px;color:var(--text2);}
+.simp-ctrl-val{font-size:14px;font-weight:700;color:var(--green);min-width:44px;}
+.simp-proj-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:18px;}
+.simp-proj-table th{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);padding:7px 10px;border-bottom:1px solid var(--border);text-align:left;}
+.simp-proj-table td{padding:8px 10px;border-bottom:1px solid var(--border);}
+.simp-proj-table tr:last-child td{border-bottom:none;font-weight:600;}
+.simp-proj-table tbody tr:hover td{background:var(--bg4);}
+.simp-desp-item{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);}
+.simp-desp-item:last-child{border-bottom:none;}
+.simp-desp-name{font-size:12px;color:var(--text2);flex:1;min-width:100px;}
+.simp-desp-bar-wrap{flex:2;height:7px;background:var(--bg4);border-radius:4px;overflow:hidden;}
+.simp-desp-fill{height:100%;border-radius:4px;transition:width .4s;}
+.simp-desp-curr{font-size:11px;color:var(--text3);min-width:70px;text-align:right;}
+.simp-explain{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px;font-size:12px;color:var(--text2);line-height:1.75;}
+.simp-explain strong{color:var(--text);}
+.simp-chart-wrap{display:flex;gap:6px;align-items:flex-end;height:110px;margin:10px 0 4px;}
+.simp-bar-grp{display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;}
+.simp-bar-cols{display:flex;gap:3px;align-items:flex-end;width:100%;height:96px;}
+.simp-bar-col{flex:1;border-radius:3px 3px 0 0;min-height:3px;transition:height .35s ease;}
+.simp-bar-yr{font-size:9px;color:var(--text3);text-align:center;}
+.simp-override{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--bg4);border-radius:var(--rs);padding:10px 14px;margin-bottom:14px;}
+.simp-override label{font-size:11px;color:var(--text2);}
+.simp-override input{width:88px;padding:5px 8px;font-size:12px;}
+.simp-extra-row{display:grid;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);}
+.simp-extra-row:last-child{border-bottom:none;}
+.simp-extra-colab-row{grid-template-columns:1fr 120px 28px;}
+.simp-extra-rateio-row{grid-template-columns:1fr 110px 70px 90px 90px 28px;align-items:start;}
+.simp-extra-input{padding:6px 9px;font-size:12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);width:100%;}
+.simp-extra-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;}
+.simp-extra-add{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:6px 12px;background:none;border:1px dashed var(--border);border-radius:var(--rs);color:var(--text3);cursor:pointer;width:100%;justify-content:center;margin-top:8px;transition:all .15s;}
+.simp-extra-add:hover{border-color:var(--blue2);color:var(--blue2);}
+/* ── ACCORDION EXTRAS ── */
+.simp-acc-hdr{display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 0;user-select:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.simp-acc-hdr:hover{opacity:.85;}
+.simp-acc-hdr.open{border-bottom-color:var(--border);}
+.simp-acc-arrow{width:18px;height:18px;display:flex;align-items:center;justify-content:center;color:var(--text3);transition:transform .22s ease;flex-shrink:0;}
+.simp-acc-hdr.open .simp-acc-arrow{transform:rotate(90deg);}
+.simp-acc-body{overflow:hidden;max-height:0;transition:max-height .28s ease,opacity .2s ease;opacity:0;}
+.simp-acc-body.open{max-height:600px;opacity:1;}
+.simp-mes-input{font-variant-numeric:tabular-nums;letter-spacing:.02em;}
+.simp-mes-input:focus{border-color:var(--blue2)!important;background:var(--bg3)!important;color:var(--text)!important;}
+.simp-acc-sep{height:1px;background:var(--border);margin:6px 0 12px;}
+.simp-extra-rm{width:26px;height:26px;background:none;border:1px solid var(--border);border-radius:var(--rs);color:var(--red);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.simp-extras-impact{display:flex;gap:10px;flex-wrap:wrap;padding:10px 0 0;margin-top:4px;border-top:1px solid var(--border);}
+.simp-extras-pill{font-size:11px;padding:3px 10px;border-radius:20px;background:var(--abg);border:1px solid var(--abd);color:var(--amber);font-weight:600;}
+/* Comunicado PDF */
+#modal-comunicado{z-index:600;}
+.comunicado-modal-inner{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);width:min(1020px,97vw);max-height:95vh;display:flex;flex-direction:column;box-shadow:0 32px 96px rgba(0,0,0,.55);overflow:hidden;}
+.comunicado-modal-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.comunicado-modal-body{display:flex;flex:1;overflow:hidden;min-height:0;}
+.comunicado-controls{width:240px;flex-shrink:0;border-right:1px solid var(--border);overflow-y:auto;padding:14px;}
+.comunicado-preview-wrap{flex:1;overflow-y:auto;background:#e8e8e8;padding:20px;display:flex;justify-content:center;}
+.comunicado-a4{background:#fff;width:210mm;min-height:297mm;box-shadow:0 4px 24px rgba(0,0,0,.18);padding:14mm 16mm;box-sizing:border-box;font-family:'DM Sans',sans-serif;color:#1a1a1a;position:relative;}
+.com-section-toggle{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer;}
+.com-section-toggle:last-child{border-bottom:none;}
+.com-section-toggle label{font-size:12px;color:var(--text);cursor:pointer;flex:1;}
+.com-section-toggle input[type=checkbox]{accent-color:var(--blue2);width:14px;height:14px;cursor:pointer;}
+.com-field{margin-bottom:10px;}
+.com-field label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:3px;}
+.com-field input,.com-field textarea,.com-field select{width:100%;padding:6px 9px;font-size:12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-family:inherit;}
+.com-field textarea{resize:vertical;min-height:60px;}
+.ca4-hdr{background:#1a1a2e;margin:-14mm -16mm 6mm -16mm;padding:7mm 16mm 6mm;position:relative;overflow:hidden;}
+.ca4-hdr::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#388bfd,#39c5cf);}
+.ca4-hdr-tag{font-size:7pt;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:#7fa8e8;margin-bottom:3mm;}
+.ca4-condo{font-family:'Merriweather',serif;font-size:18pt;font-weight:700;color:#ffffff;line-height:1.2;margin-bottom:1.5mm;}
+.ca4-sub{font-size:8.5pt;color:#8baad8;margin-bottom:0;}
+.ca4-title{display:none;}
+.ca4-section{margin-bottom:5mm;}
+.ca4-section-hdr{display:flex;align-items:center;gap:3mm;margin-bottom:3mm;padding-bottom:1.5mm;border-bottom:1.5px solid #e8edf5;}
+.ca4-section-icon{width:5mm;height:5mm;border-radius:1.5mm;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:8pt;}
+.ca4-section-title{font-size:7.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#888;}
+.ca4-desp-row{display:grid;grid-template-columns:44mm 1fr 24mm;gap:4px;align-items:center;margin-bottom:1.5mm;}
+.ca4-desp-name{font-size:8pt;color:#444;}
+.ca4-desp-bar-wrap{height:4px;background:#eef0f5;border-radius:2px;overflow:hidden;}
+.ca4-desp-bar-fill{height:100%;border-radius:2px;background:#388bfd;}
+.ca4-desp-val{font-size:8pt;font-weight:600;color:#1a1a2e;text-align:right;}
+.ca4-desp-total{display:flex;justify-content:space-between;align-items:center;margin-top:3mm;padding-top:2mm;border-top:1.5px solid #e8edf5;}
+.ca4-desp-total-l{font-size:7.5pt;color:#888;}
+.ca4-desp-total-v{font-size:9pt;font-weight:700;color:#1a1a2e;}
+.ca4-comp-row{display:grid;grid-template-columns:36mm 1fr 28px 24mm;gap:4px;align-items:center;margin-bottom:2mm;}
+.ca4-comp-dot{width:7px;height:7px;border-radius:50%;}
+.ca4-comp-name{font-size:8pt;color:#444;}
+.ca4-comp-bar-wrap{height:5px;background:#eef0f5;border-radius:2.5px;overflow:hidden;}
+.ca4-comp-bar-fill{height:100%;border-radius:2.5px;}
+.ca4-comp-pct{font-size:7.5pt;font-weight:700;color:#888;text-align:right;}
+.ca4-comp-val{font-size:8pt;font-weight:700;text-align:right;}
+.ca4-scenarios{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:2mm;margin-bottom:3.5mm;}
+.ca4-scen{border-radius:2mm;padding:3mm 2.5mm;text-align:center;border:1px solid #e0e0e0;background:#fafafa;}
+.ca4-scen.sem{background:#fff5f5;border-color:#fcc;} 
+.ca4-scen.ipca{background:#fffbf0;border-color:#f0d9a0;}
+.ca4-scen.prop{background:#f2fff5;border-color:#a8ddb8;}
+.ca4-scen.nec{background:#f0f6ff;border-color:#b8d0f8;}
+.ca4-scen.rec{background:#f0fbfc;border-color:#a0dde0;}
+.ca4-scen-label{font-size:6pt;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:1.5mm;}
+.ca4-scen-label.sem{color:#e05555;}.ca4-scen-label.ipca{color:#c49020;}.ca4-scen-label.prop{color:#27943a;}
+.ca4-scen-cota{font-family:'Merriweather',serif;font-size:11pt;font-weight:700;margin:1.5mm 0 1mm;line-height:1;}
+.ca4-scen-cota.sem{color:#e05555;}.ca4-scen-cota.ipca{color:#c49020;}.ca4-scen-cota.prop{color:#27943a;}
+.ca4-scen-saldo{font-size:6.5pt;color:#666;line-height:1.3;}
+.ca4-destaque{display:flex;align-items:center;gap:4mm;background:#f0f6ff;border-radius:2.5mm;padding:4mm;margin-bottom:4mm;border:1px solid #c8ddfb;}
+.ca4-destaque-icon{width:10mm;height:10mm;background:#388bfd;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14pt;color:#fff;flex-shrink:0;}
+.ca4-destaque-body{}
+.ca4-destaque-num{font-family:'Merriweather',serif;font-size:16pt;font-weight:700;color:#388bfd;line-height:1;}
+.ca4-destaque-label{font-size:8pt;color:#555;margin-top:1mm;line-height:1.4;}
+.ca4-assembleia{display:flex;gap:4mm;align-items:center;background:#f8f8fb;border-radius:2mm;padding:3.5mm;margin-bottom:3.5mm;border:1px solid #e8eaf0;}
+.ca4-assembleia-icon{font-size:18pt;flex-shrink:0;}
+.ca4-assembleia-body{}
+.ca4-assembleia-title{font-size:9pt;font-weight:700;color:#1a1a2e;margin-bottom:1mm;}
+.ca4-assembleia-info{font-size:8pt;color:#555;}
+.ca4-obs{background:#fffbf0;border-left:3px solid #d29922;border-radius:0 2mm 2mm 0;padding:3mm 4mm;font-size:8pt;color:#555;line-height:1.55;margin-bottom:3.5mm;}
+.ca4-footer{display:flex;justify-content:space-between;align-items:center;border-top:1px solid #e8eaf0;padding-top:2.5mm;margin-top:4mm;}
+.ca4-footer-l{font-size:7pt;color:#bbb;}
+.ca4-footer-r{font-size:7pt;color:#bbb;font-style:italic;}
+@media(max-width:900px){.simp-grid{grid-template-columns:repeat(3,1fr);}.simp-scenarios{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:600px){
+  /* KPI cards: 2 colunas, último card ocupa linha inteira */
+  .simp-grid{grid-template-columns:1fr 1fr!important;}
+  .simp-grid .simp-kpi:last-child{grid-column:1/-1;}
+  .simp-kpi{padding:10px 12px;}
+  .simp-kpi-v{font-size:20px!important;}
+  .simp-kpi-l{font-size:9px;}
+  /* Cenários: 1 coluna */
+  .simp-scenarios{grid-template-columns:1fr!important;}
+  .simp-scen-cota{font-size:18px;}
+  /* Breakdown: colapsar barra */
+  .simp-bk-row{grid-template-columns:1fr 40px 90px!important;gap:6px;}
+  .simp-bk-bar-wrap{display:none!important;}
+  /* Sliders: empilhar */
+  .simp-ctrl-row{flex-direction:column;gap:10px;}
+  .simp-ctrl-row>div{width:100%;}
+  /* Comunicado modal */
+  .comunicado-modal-body{flex-direction:column;}
+  .comunicado-controls{width:100%;border-right:none;border-bottom:1px solid var(--border);}
+  .comunicado-a4{width:100%;min-height:auto;padding:8mm 10mm;}
+  /* Header de Simulações: empilhar */
+  #page-simulacoes .page-hdr-row{flex-direction:column;align-items:flex-start!important;gap:8px;}
+  #page-simulacoes .page-hdr-row>div:last-child{display:flex;gap:8px;width:100%;}
+  #page-simulacoes .page-hdr-row>div:last-child button{flex:1;justify-content:center;}
+}
 .sim-stat{background:var(--bg4);border-radius:var(--rs);padding:.625rem .875rem;}
 .sim-stat-l{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;}
 .sim-stat-v{font-size:15px;font-weight:600;}
@@ -1969,6 +2148,10 @@ body.ql-lock-scroll{overflow:hidden;}
       <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
       <span class="nav-label">Análises</span>
     </button>
+    <button class="nav-item" id="nav-simulacoes" onclick="navPage('simulacoes',this)">
+      <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/><polyline points="7 10 10 7 13 10 17 6"/></svg>
+      <span class="nav-label">Simulações</span>
+    </button>
   </div>
 
   <!-- AÇÕES -->
@@ -2215,7 +2398,11 @@ body.ql-lock-scroll{overflow:hidden;}
       <div class="mc a"><div class="mc-l">Total / mês</div><div class="mc-v" id="m_total">—</div></div>
     </div>
     <div class="bk">
-      <div class="bk-h">Composição da cota</div>
+      <div class="bk-h" style="display:grid;grid-template-columns:10px 1fr 58px 65px 105px;gap:10px;align-items:center;">
+        <span></span><span>Item</span><span></span>
+        <span title="Percentual de cada componente sobre o total arrecadado necessário — não é a taxa aplicada às despesas" style="text-align:right;cursor:help;">% do total</span>
+        <span style="text-align:right;">Valor / mês</span>
+      </div>
       <div id="bk-rows"></div>
     </div>
     <div class="chart-card">
@@ -2405,6 +2592,203 @@ body.ql-lock-scroll{overflow:hidden;}
   </div>
 
 </div><!-- end page-analises -->
+  <!-- ══ PAGE: SIMULAÇÕES ══ -->
+  <div id="page-simulacoes" class="page">
+    <div style="padding:1.25rem;max-width:1080px;margin:0 auto;">
+      <div class="page-hdr-row" style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap;">
+        <div>
+          <div style="font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:4px;">📊 Simulações de Reajuste</div>
+          <div style="font-size:12px;color:var(--text2);">Compare cenários e entenda o impacto do reajuste nas finanças do condomínio.</div>
+        </div>
+        <button onclick="window._simEncargosInit=false;window._simEncargosOverride=false;simSetFonte('app')" style="display:flex;align-items:center;gap:6px;padding:7px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);font-size:12px;color:var(--text2);cursor:pointer;">
+          <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.86"/></svg>
+          Atualizar dados
+        </button>
+        <button onclick="openComunicadoModal()" style="display:flex;align-items:center;gap:7px;padding:7px 16px;background:var(--blue2);color:#fff;border:none;border-radius:var(--rs);font-size:12px;font-weight:600;cursor:pointer;box-shadow:0 2px 10px rgba(56,139,253,.3);">
+          <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          Comunicado
+        </button>
+      </div>
+      <!-- Fonte dos dados -->
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:18px;overflow:hidden;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:12px;font-weight:600;color:var(--text);">📡 Fonte dos dados</span>
+            <span style="font-size:11px;color:var(--text3)" id="simp-fonte-status">—</span>
+          </div>
+          <div style="display:flex;gap:4px;background:var(--bg3);border-radius:var(--rs);padding:3px;">
+            <button id="simp-btn-app" onclick="simSetFonte('app')" style="padding:5px 14px;font-size:11px;font-weight:500;border-radius:5px;border:none;cursor:pointer;background:var(--blue2);color:#fff;">Do app</button>
+            <button id="simp-btn-manual" onclick="simSetFonte('manual')" style="padding:5px 14px;font-size:11px;font-weight:500;border-radius:5px;border:none;cursor:pointer;background:none;color:var(--text2);">Manual</button>
+          </div>
+        </div>
+        <div id="simp-manual-panel" style="display:none;padding:14px 16px;">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:10px;">Preencha os valores base. Os controles abaixo funcionam normalmente.</div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+            <div style="display:flex;flex-direction:column;gap:4px;"><label style="font-size:11px;color:var(--text2);">Despesas totais/mês (R$)</label><input type="number" inputmode="decimal" id="simp-manual-desp" placeholder="ex: 25000" min="0" step="100" style="width:130px;padding:7px 10px;font-size:13px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);" onchange="renderSimulacoes()"></div>
+            <div style="display:flex;flex-direction:column;gap:4px;"><label style="font-size:11px;color:var(--text2);">Cota atual (R$/unidade)</label><input type="number" inputmode="decimal" id="simp-manual-cota" placeholder="ex: 850" min="0" step="10" style="width:130px;padding:7px 10px;font-size:13px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);" onchange="renderSimulacoes()"></div>
+            <div style="display:flex;flex-direction:column;gap:4px;"><label style="font-size:11px;color:var(--text2);">Nº de unidades</label><input type="number" inputmode="decimal" id="simp-manual-n" placeholder="ex: 40" min="1" step="1" style="width:100px;padding:7px 10px;font-size:13px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);" onchange="renderSimulacoes()"></div>
+            <button onclick="renderSimulacoes()" style="padding:7px 16px;background:var(--blue2);color:#fff;border:none;border-radius:var(--rs);font-size:12px;font-weight:600;cursor:pointer;height:36px;">Aplicar</button>
+          </div>
+        </div>
+      </div>
+      <!-- Extras -->
+      <div class="card" style="margin-bottom:18px;">
+        <div class="card-hdr" style="margin-bottom:0;"><span class="cdot" style="background:var(--purple)"></span><span class="cttl">➕ Despesas extras — simular novos custos</span><span style="margin-left:auto;font-size:11px;color:var(--text3);">Adicionado ao cálculo da cota</span></div>
+        <div style="padding:10px 0 6px;">
+
+          <!-- ACORDEÃO: Colaboradores -->
+          <div class="simp-acc-hdr" id="acc-colab-hdr" onclick="simToggleAcc('colab')" title="Expandir/recolher">
+            <svg class="simp-acc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+            <div style="font-size:12px;font-weight:600;color:var(--text);">👥 Contratação de colaboradores</div>
+            <div style="font-size:11px;color:var(--text3);margin-left:6px;">Custo mensal por cargo/função</div>
+            <div class="simp-extras-pill" id="simp-colab-total-pill" style="display:none;margin-left:auto;">+ R$ 0,00/mês</div>
+          </div>
+          <div class="simp-acc-body" id="acc-colab-body">
+            <div style="padding-top:10px;">
+              <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;display:grid;grid-template-columns:1fr 120px 28px;gap:8px;padding-bottom:5px;border-bottom:1px solid var(--border);margin-bottom:4px;"><span>Cargo / função</span><span style="text-align:right;">Custo mensal</span><span></span></div>
+              <div id="simp-colab-list"></div>
+              <button class="simp-extra-add" onclick="simAddColab()"><svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Adicionar colaborador</button>
+            </div>
+          </div>
+
+          <div class="simp-acc-sep"></div>
+
+          <!-- ACORDEÃO: Rateios Extraordinários -->
+          <div class="simp-acc-hdr" id="acc-rateio-hdr" onclick="simToggleAcc('rateio')" title="Expandir/recolher">
+            <svg class="simp-acc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+            <div style="font-size:12px;font-weight:600;color:var(--text);">🖌️ Rateios extraordinários</div>
+            <div style="font-size:11px;color:var(--text3);margin-left:6px;">Pintura, obras, reformas — parcelados</div>
+            <div class="simp-extras-pill" id="simp-rateio-total-pill" style="display:none;margin-left:auto;">+ R$ 0,00/mês</div>
+          </div>
+          <div class="simp-acc-body" id="acc-rateio-body">
+            <div style="padding-top:10px;">
+              <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;display:grid;grid-template-columns:1fr 110px 70px 90px 90px 28px;gap:8px;padding-bottom:5px;border-bottom:1px solid var(--border);margin-bottom:4px;"><span>Descrição</span><span style="text-align:right;">Total (R$)</span><span style="text-align:right;">Parcelas</span><span style="text-align:center;">Início</span><span style="text-align:center;">Fim</span><span></span></div>
+              <div id="simp-rateio-list"></div>
+              <button class="simp-extra-add" onclick="simAddRateio()"><svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Adicionar rateio</button>
+            </div>
+          </div>
+
+        </div>
+        <div class="simp-extras-impact" id="simp-extras-impact" style="display:none;"><span style="font-size:11px;color:var(--text3);align-self:center;">Impacto total na cota:</span><span class="simp-extras-pill" id="simp-extras-desp-pill">+R$ 0/mês</span><span class="simp-extras-pill" id="simp-extras-cota-pill" style="background:var(--pbg,rgba(163,113,247,.1));border-color:var(--pbd,rgba(163,113,247,.3));color:var(--purple)">+R$ 0/unidade</span></div>
+      </div>
+      <!-- KPI Cards (ordem: Despesas | Cota vigente | Deficit | Cota calculada) -->
+      <div class="simp-grid" id="simp-kpis">
+        <div class="simp-kpi"><div class="simp-kpi-l">Despesas mensais</div><div class="simp-kpi-v" id="simp-k-desp">—</div><div class="simp-kpi-s">orçamento operacional</div></div>
+        <div class="simp-kpi"><div class="simp-kpi-l">Cota vigente</div><div class="simp-kpi-v" id="simp-k-cota-atual" style="color:var(--text2)">—</div><div class="simp-kpi-s" id="simp-k-defasagem">por unidade / mês</div></div>
+        <div class="simp-kpi" id="simp-k-saldo-card"><div class="simp-kpi-l" id="simp-k-saldo-label">Deficit / Superávit</div><div class="simp-kpi-v" id="simp-k-saldo" style="color:var(--text2)">—</div><div class="simp-kpi-s" id="simp-k-saldo-s">arrecadação vs despesas</div></div>
+        <div class="simp-kpi" id="simp-k-cota-calc-card"><div class="simp-kpi-l">Cota calculada</div><div class="simp-kpi-v" id="simp-k-cota-calc" style="color:var(--amber)">—</div><div class="simp-kpi-s">necessária para equilibrar</div></div>
+        <div class="simp-kpi" id="simp-k-cota-rec-card"><div class="simp-kpi-l">Cota recomendada</div><div class="simp-kpi-v" id="simp-k-cota-rec" style="color:var(--green)">—</div><div class="simp-kpi-s">FR 10% · FO 10% · Inad. 10%</div></div>
+      </div>
+
+      <!-- Breakdown composição da cota -->
+      <div class="simp-breakdown" id="simp-breakdown-block">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div>
+            <div style="font-size:12px;font-weight:600;color:var(--text);">📐 Composição da cota necessária</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px;">Como cada componente contribui para o valor final por unidade</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;">cota necessária</div>
+            <div style="font-family:'DM Serif Display',serif;font-size:22px;color:var(--blue2)" id="simp-bk-cota-total">—</div>
+            <div style="font-size:10px;color:var(--text3);">por unidade / mês</div>
+          </div>
+        </div>
+        <div id="simp-bk-rows"></div>
+        <div class="simp-bk-total" id="simp-bk-total-row" style="display:none;">
+          <div>
+            <div class="simp-bk-total-label">Total arrecadação necessária</div>
+            <div class="simp-bk-unid" id="simp-bk-total-unid">— unidades × R$ —</div>
+          </div>
+          <div class="simp-bk-total-val" id="simp-bk-total-val">—</div>
+        </div>
+      </div>
+
+      <!-- Controles -->
+      <div class="simp-controls">
+        <div style="font-size:12px;font-weight:600;margin-bottom:12px;color:var(--text);">🎛️ Controles do cenário personalizado</div>
+        <div class="simp-ctrl-row" style="gap:20px;">
+          <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:220px;"><span class="simp-ctrl-label">Percentual de reajuste</span><input type="range" id="simp-pct-range" min="0" max="30" step="0.5" value="8" oninput="document.getElementById('simp-pct-val').textContent=parseFloat(this.value).toFixed(1)+'%';renderSimulacoes()" style="flex:1;accent-color:var(--green);"><span class="simp-ctrl-val" id="simp-pct-val">8.0%</span></div>
+          <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:220px;"><span class="simp-ctrl-label">Horizonte de projeção</span><select id="simp-anos" onchange="renderSimulacoes()" style="padding:5px 8px;font-size:12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);"><option value="3">3 anos</option><option value="5" selected>5 anos</option><option value="10">10 anos</option></select></div>
+          <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:220px;"><span class="simp-ctrl-label">Crescimento das despesas</span><input type="range" id="simp-desp-growth" min="0" max="20" step="0.5" value="6" oninput="document.getElementById('simp-desp-growth-val').textContent=parseFloat(this.value).toFixed(1)+'%';renderSimulacoes()" style="flex:1;accent-color:var(--amber);"><span class="simp-ctrl-val" id="simp-desp-growth-val" style="color:var(--amber)">6.0%</span></div>
+        </div>
+        <div style="height:1px;background:var(--border);margin:12px 0;"></div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:10px;">Encargos sobre as despesas — pré-preenchidos com os valores do app:</div>
+        <div class="simp-ctrl-row" style="gap:20px;">
+          <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:220px;"><span class="simp-ctrl-label">Inadimplência estimada</span><input type="range" id="simp-inad" min="0" max="30" step="0.5" value="5" oninput="document.getElementById('simp-inad-val').textContent=parseFloat(this.value).toFixed(1)+'%';window._simEncargosOverride=true;_updateSimSyncBadge(true);renderSimulacoes()" style="flex:1;accent-color:var(--red);"><span class="simp-ctrl-val" id="simp-inad-val" style="color:var(--red)">5.0%</span></div>
+          <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:220px;"><span class="simp-ctrl-label">Fundo de Reserva</span><input type="range" id="simp-fr" min="0" max="20" step="0.5" value="5" oninput="document.getElementById('simp-fr-val').textContent=parseFloat(this.value).toFixed(1)+'%';window._simEncargosOverride=true;_updateSimSyncBadge(true);renderSimulacoes()" style="flex:1;accent-color:var(--teal);"><span class="simp-ctrl-val" id="simp-fr-val" style="color:var(--teal)">5.0%</span></div>
+          <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:220px;"><span class="simp-ctrl-label">Fundo de Obras</span><input type="range" id="simp-fo" min="0" max="20" step="0.5" value="3" oninput="document.getElementById('simp-fo-val').textContent=parseFloat(this.value).toFixed(1)+'%';window._simEncargosOverride=true;_updateSimSyncBadge(true);renderSimulacoes()" style="flex:1;accent-color:var(--green);"><span class="simp-ctrl-val" id="simp-fo-val" style="color:var(--green)">3.0%</span></div>
+          <div id="simp-sync-badge" style="padding:4px 0;"><span style="color:var(--teal);font-size:11px;">✓ Sincronizado com Dados do Condomínio</span></div>
+        </div>
+      </div>
+      <!-- Cenários 4 cards -->
+      <div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Cenários comparativos — Ano 1</div>
+      <div class="simp-scenarios">
+        <div class="simp-scenario sem"><div class="simp-scen-badge sem">⚠ Sem reajuste</div><div class="simp-scen-title">Cota congelada</div><div class="simp-scen-sub">Manter o valor atual sem ajuste</div><div class="simp-scen-cota" id="simp-s0-cota" style="color:var(--red)">—</div><div class="simp-scen-sub">por unidade / mês</div><div class="simp-scen-delta" id="simp-s0-delta" style="color:var(--red)">—</div><div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(248,81,73,.2);"><div style="font-size:11px;color:var(--text3);margin-bottom:3px;">Deficit acumulado / ano</div><div style="font-size:14px;font-weight:700;color:var(--red)" id="simp-s0-deficit">—</div></div></div>
+        <div class="simp-scenario ipca"><div class="simp-scen-badge ipca">📈 IPCA</div><div class="simp-scen-title">Reajuste pela inflação</div><div class="simp-scen-sub">Usar IPCA 12m como base</div><div class="simp-scen-cota" id="simp-s1-cota" style="color:var(--amber)">—</div><div class="simp-scen-sub">por unidade / mês</div><div class="simp-scen-delta" id="simp-s1-delta" style="color:var(--amber)">—</div><div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(210,153,34,.2);"><div style="font-size:11px;color:var(--text3);margin-bottom:3px;">Saldo mensal estimado</div><div style="font-size:14px;font-weight:700;color:var(--amber)" id="simp-s1-saldo">—</div></div></div>
+        <div class="simp-scenario custom"><div class="simp-scen-badge custom">✓ Personalizado</div><div class="simp-scen-title">Reajuste definido</div><div class="simp-scen-sub">Percentual configurado acima</div><div class="simp-scen-cota" id="simp-s2-cota" style="color:var(--green)">—</div><div class="simp-scen-sub">por unidade / mês</div><div class="simp-scen-delta" id="simp-s2-delta" style="color:var(--green)">—</div><div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(63,185,80,.2);"><div style="font-size:11px;color:var(--text3);margin-bottom:3px;">Saldo mensal estimado</div><div style="font-size:14px;font-weight:700;color:var(--green)" id="simp-s2-saldo">—</div></div></div>
+        <div class="simp-scenario nec"><div class="simp-scen-badge nec">🎯 Necessária</div><div class="simp-scen-title">Equilíbrio projetado</div><div class="simp-scen-sub">Cobre 100% das despesas no Ano 1</div><div class="simp-scen-cota" id="simp-s3-cota" style="color:var(--blue2)">—</div><div class="simp-scen-sub">por unidade / mês</div><div class="simp-scen-delta" id="simp-s3-delta" style="color:var(--blue2)">—</div><div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(56,139,253,.2);"><div style="font-size:11px;color:var(--text3);margin-bottom:3px;">vs proposta personalizada</div><div style="font-size:14px;font-weight:700;color:var(--blue2)" id="simp-s3-vs">—</div><div style="font-size:10px;color:var(--text3);margin-top:4px;" id="simp-s3-growth-note">—</div></div></div>
+        <div class="simp-scenario rec"><div class="simp-scen-badge rec">⭐ Recomendada</div><div class="simp-scen-title">Cota recomendada</div><div class="simp-scen-sub">FR 10% · FO 10% · Inad. 10%</div><div class="simp-scen-cota" id="simp-s4-cota" style="color:var(--teal)">—</div><div class="simp-scen-sub">por unidade / mês</div><div class="simp-scen-delta" id="simp-s4-delta" style="color:var(--teal)">—</div><div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(57,197,207,.2);"><div style="font-size:11px;color:var(--text3);margin-bottom:3px;">reserva extra vs calculada</div><div style="font-size:14px;font-weight:700;color:var(--teal)" id="simp-s4-extra">—</div></div></div>
+      </div>
+      <!-- Gráfico -->
+      <div class="card" style="margin-bottom:18px;"><div class="card-hdr"><span class="cdot" style="background:var(--blue2)"></span><span class="cttl">Evolução da cota — projeção plurianual</span></div><div style="font-size:11px;color:var(--text3);margin-bottom:8px;" id="simp-chart-legend"><span style="display:inline-flex;align-items:center;gap:4px;margin-right:12px;"><span style="width:10px;height:10px;background:var(--red);border-radius:2px;display:inline-block"></span>Sem reajuste</span><span style="display:inline-flex;align-items:center;gap:4px;margin-right:12px;"><span style="width:10px;height:10px;background:var(--amber);border-radius:2px;display:inline-block"></span>IPCA</span><span style="display:inline-flex;align-items:center;gap:4px;margin-right:12px;"><span style="width:10px;height:10px;background:var(--green);border-radius:2px;display:inline-block"></span>Personalizado</span><span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;background:var(--blue2);opacity:.6;border-radius:2px;display:inline-block"></span>Equilíbrio</span></div><div class="simp-chart-wrap" id="simp-chart-bars"></div></div>
+      <!-- Tabela de projeção -->
+      <div class="card" style="margin-bottom:18px;"><div class="card-hdr"><span class="cdot" style="background:var(--teal)"></span><span class="cttl">Tabela de projeção — cota e arrecadação</span></div><div style="overflow-x:auto;"><table class="simp-proj-table" id="simp-proj-table"><thead><tr><th>Ano</th><th>Despesas/mês</th><th style="color:var(--red)">Sem reajuste</th><th style="color:var(--red)">Deficit</th><th style="color:var(--amber)">Com IPCA</th><th style="color:var(--amber)">Saldo</th><th style="color:var(--green)">Personalizado</th><th style="color:var(--green)">Saldo</th></tr></thead><tbody id="simp-proj-tbody"></tbody></table></div></div>
+      <!-- Despesas projetadas -->
+      <div class="card" style="margin-bottom:18px;"><div class="card-hdr"><span class="cdot" style="background:var(--purple)"></span><span class="cttl">Despesas projetadas — impacto por item (Ano 1)</span></div><div style="font-size:11px;color:var(--text3);margin-bottom:10px;"><span>Valor atual</span>&nbsp;&nbsp;<span style="color:var(--amber)">→ Com IPCA</span>&nbsp;&nbsp;<span style="color:var(--green)">→ Personalizado</span></div><div id="simp-desp-list"></div></div>
+
+      <!-- Evolução retroativa com índices -->
+      <div class="card" style="margin-bottom:18px;">
+        <div class="card-hdr">
+          <span class="cdot" style="background:var(--amber)"></span>
+          <span class="cttl">📅 Evolução retroativa — o que deveria ter sido reajustado</span>
+        </div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:12px;">
+          Simulação de como a cota teria evoluído se reajustada ano a ano pelo índice escolhido — comparando com a cota real (congelada) e a necessária.
+        </div>
+        <!-- Controles do retroativo -->
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px;padding:10px 12px;background:var(--bg3);border-radius:var(--rs);">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <label style="font-size:11px;color:var(--text2);white-space:nowrap;">Índice base:</label>
+            <select id="retro-indice" onchange="renderRetroativo()" style="padding:5px 9px;font-size:12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);">
+              <option value="ipca">IPCA</option>
+              <option value="igpm">IGP-M</option>
+              <option value="inpc">INPC</option>
+              <option value="custom">Personalizado</option>
+            </select>
+          </div>
+          <div style="font-size:11px;color:var(--text3);">Os percentuais por ano são editáveis diretamente na tabela.</div>
+          <button onclick="renderRetroativo()" style="margin-left:auto;padding:5px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);font-size:11px;color:var(--text2);cursor:pointer;">↺ Recalcular</button>
+        </div>
+        <!-- Tabela -->
+        <div style="overflow-x:auto;">
+          <table class="simp-proj-table" id="retro-table">
+            <thead>
+              <tr>
+                <th>Ano</th>
+                <th style="text-align:right;">Índice (%)</th>
+                <th style="color:var(--text3);text-align:right;">Cota real</th>
+                <th style="color:var(--teal);text-align:right;">Se reajustada</th>
+                <th style="color:var(--blue2);text-align:right;">Necessária</th>
+                <th style="text-align:right;">Gap reaj. vs nec.</th>
+                <th style="text-align:right;">Gap real vs nec.</th>
+              </tr>
+            </thead>
+            <tbody id="retro-tbody"></tbody>
+          </table>
+        </div>
+        <!-- Legenda -->
+        <div style="margin-top:10px;font-size:11px;color:var(--text3);display:flex;gap:16px;flex-wrap:wrap;">
+          <span><span style="color:var(--teal);font-weight:600;">Reajustada</span> — o que a cota seria se houvesse reajuste anual pelo índice</span>
+          <span><span style="color:var(--blue2);font-weight:600;">Necessária</span> — valor que cobre 100% das despesas + encargos naquele ano</span>
+          <span><span style="color:var(--red);font-weight:600;">Gap</span> — diferença entre o valor e o necessário (negativo = deficit)</span>
+        </div>
+        <div id="retro-destaque" style="display:none;margin-top:14px;background:rgba(248,81,73,.06);border:1px solid rgba(248,81,73,.3);border-radius:var(--rs);padding:12px 14px;"></div>
+      </div>
+
+      <!-- Explicação -->
+      <div class="card" style="margin-bottom:18px;"><div class="card-hdr"><span class="cdot" style="background:var(--amber)"></span><span class="cttl">📄 Explicação para os moradores</span><button onclick="copiarExplicacao()" style="margin-left:auto;font-size:11px;padding:4px 10px;background:var(--bg4);border:1px solid var(--border);border-radius:var(--rs);cursor:pointer;color:var(--text2);">Copiar texto</button></div><div class="simp-explain" id="simp-explain-text">—</div></div>
+    </div>
+  </div><!-- end page-simulacoes -->
 </main>
 </div><!-- end content-area -->
 </div><!-- end layout -->
@@ -2444,7 +2828,8 @@ body.ql-lock-scroll{overflow:hidden;}
         <div style="grid-column:1/-1">
           <div class="field"><label>Nome do condomínio</label><input type="text" id="condo_nome" value="Edificio Primavera" oninput="dirty();calcular()"></div>
         </div>
-        <div class="field"><label>Nº de unidades</label><input type="number" inputmode="decimal" id="n_unidades" value="40" min="1" oninput="dirty();calcular()"></div>
+        <div class="field"><label>Nº total de unidades <span style="font-size:10px;color:var(--text3);font-weight:400">(rateio)</span></label><input type="number" inputmode="decimal" id="n_unidades" value="40" min="1" oninput="dirty();calcular()"></div>
+        <div class="field"><label>Unidades pagantes <span style="font-size:10px;color:var(--text3);font-weight:400">(cobrança)</span></label><input type="number" inputmode="decimal" id="n_pagantes" value="40" min="1" oninput="dirty();calcular()"><div style="font-size:10px;color:var(--text3);margin-top:4px;line-height:1.4">Síndico/subsíndico isentos? Informe aqui o nº de unidades que efetivamente pagam a cota.</div></div>
         <div class="field"><label>Cota vigente (R$)</label><input type="number" inputmode="decimal" id="cota_atual" value="850" min="0" step="10" oninput="dirty();calcular()"></div>
         <div class="field" style="grid-column:1/-1"><label>Competência</label><input type="text" id="competencia" placeholder="ex: Janeiro/2026" oninput="dirty();calcular()"></div>
       </div>
@@ -3460,7 +3845,7 @@ function renderDespesas(){
     const natColor=nat==='fixa'?'var(--blue)':'var(--amber)';
     r.innerHTML=`<span class="drag-handle" title="Arrastar para reordenar">⠿</span>
       <input type="text" value="${d.desc}" oninput="despesas[${i}].desc=this.value" placeholder="Descrição">
-      <input type="number" inputmode="decimal" value="${d.valor}" min="0" step="50" oninput="despesas[${i}].valor=parseFloat(this.value)||0;dirty();calcularDebounced()" style="text-align:right">
+      <input type="number" inputmode="decimal" value="${d.valor}" min="0" step="50" oninput="if(this.value===''||this.value==='-')return;const _v=parseFloat(this.value);if(isNaN(_v))return;despesas[${i}].valor=_v;dirty();calcularDebounced()" onchange="despesas[${i}].valor=parseFloat(this.value)||0;dirty();calcularDebounced()" style="text-align:right">
       <select onchange="despesas[${i}].tipo=this.value;dirty();calcular();renderDespesas()" style="font-size:11px;padding:7px 4px;color:${tipoColor}">
         <option value="mensal"${d.tipo==='mensal'?' selected':''}>Mensal</option>
         <option value="semestral"${d.tipo==='semestral'?' selected':''}>Semestr.</option>
@@ -3482,6 +3867,1151 @@ function moveDespesa(i,dir){
   [despesas[i],despesas[j]]=[despesas[j],despesas[i]];
   renderDespesas();dirty();
 }
+
+// ── SIMULAÇÕES JS ──
+function _simFmt(v){return typeof fmt==='function'?fmt(v):v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
+window._simColabs=window._simColabs||[];
+window._simRateios=window._simRateios||[];
+
+function simRenderColab(){
+  const el=document.getElementById('simp-colab-list');if(!el)return;
+  const arr=window._simColabs;
+  if(!arr.length){el.innerHTML='<div style="font-size:11px;color:var(--text3);padding:8px 0;">Nenhum colaborador adicionado.</div>';}
+  else{el.innerHTML=arr.map((c,i)=>`<div class="simp-extra-row simp-extra-colab-row"><input class="simp-extra-input" type="text" placeholder="ex: Auxiliar de limpeza" value="${c.desc||''}" onchange="window._simColabs[${i}].desc=this.value"><input class="simp-extra-input" type="number" inputmode="decimal" placeholder="0,00" value="${c.valor||''}" style="text-align:right;" oninput="if(this.value===''||this.value==='-')return;const v=parseFloat(this.value);if(!isNaN(v)){window._simColabs[${i}].valor=v;renderSimulacoes();}" onchange="if(this.value!==''){window._simColabs[${i}].valor=parseFloat(this.value)||0;renderSimulacoes();}"><button class="simp-extra-rm" onclick="window._simColabs.splice(${i},1);simRenderColab();renderSimulacoes();">×</button></div>`).join('');}
+  const total=arr.reduce((s,c)=>s+(parseFloat(c.valor)||0),0);
+  const pill=document.getElementById('simp-colab-total-pill');
+  if(pill){pill.style.display=total>0?'block':'none';pill.textContent='+'+_simFmt(total)+'/mês';}
+}
+function simToggleAcc(key){
+  const hdr=document.getElementById('acc-'+key+'-hdr');
+  const body=document.getElementById('acc-'+key+'-body');
+  if(!hdr||!body)return;
+  const isOpen=body.classList.contains('open');
+  body.classList.toggle('open',!isOpen);
+  hdr.classList.toggle('open',!isOpen);
+}
+// Abrir acordeão automaticamente quando item é adicionado
+function simAccOpen(key){
+  const hdr=document.getElementById('acc-'+key+'-hdr');
+  const body=document.getElementById('acc-'+key+'-body');
+  if(hdr&&body){hdr.classList.add('open');body.classList.add('open');}
+}
+function simAddColab(){simAccOpen('colab');window._simColabs.push({desc:'',valor:0});simRenderColab();setTimeout(()=>{const r=document.querySelectorAll('#simp-colab-list .simp-extra-input');if(r.length)r[r.length-2].focus();},50);}
+
+function simCalcFim(inicio,parcelas){
+  if(!inicio||!parcelas||parcelas<1)return'';
+  const [y,m]=inicio.split('-').map(Number);
+  const d=new Date(y,m-1+Math.max(1,parcelas)-1,1);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+}
+// YYYY-MM → "jun/26"
+const _MESES_ABR=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+function _ymToAbr(ym){
+  if(!ym)return'';
+  const [y,m]=ym.split('-').map(Number);
+  if(!y||!m)return ym;
+  return _MESES_ABR[m-1]+'/'+String(y).slice(-2);
+}
+// "jun/26" ou "jun/2026" → "2026-06" (null se inválido)
+function _abrToYm(s){
+  if(!s)return null;
+  s=s.trim().toLowerCase();
+  // aceita "jun/26", "jun/2026", "06/26", "06/2026"
+  const m1=s.match(/^([a-zç]+)[\/-](\d{2,4})$/);
+  if(m1){
+    const mi=_MESES_ABR.indexOf(m1[1].slice(0,3));
+    if(mi<0)return null;
+    let yr=parseInt(m1[2]);if(yr<100)yr+=2000;
+    return yr+'-'+String(mi+1).padStart(2,'0');
+  }
+  const m2=s.match(/^(\d{1,2})[\/-](\d{2,4})$/);
+  if(m2){
+    let mn=parseInt(m2[1]),yr=parseInt(m2[2]);
+    if(mn<1||mn>12)return null;
+    if(yr<100)yr+=2000;
+    return yr+'-'+String(mn).padStart(2,'0');
+  }
+  // já está no formato YYYY-MM
+  if(/^\d{4}-\d{2}$/.test(s))return s;
+  return null;
+}
+function simRenderRateio(){
+  const el=document.getElementById('simp-rateio-list');if(!el)return;
+  const arr=window._simRateios;
+  const hoje=new Date();const mesAtual=hoje.getFullYear()+'-'+(String(hoje.getMonth()+1).padStart(2,'0'));
+  if(!arr.length){el.innerHTML='<div style="font-size:11px;color:var(--text3);padding:8px 0;">Nenhum rateio adicionado.</div>';}
+  else{el.innerHTML=arr.map((r,i)=>{
+    const mensal=r.total&&r.parcelas?_simFmt(r.total/Math.max(1,r.parcelas)):'—';
+    const fimAuto=simCalcFim(r.inicio||mesAtual,r.parcelas);
+    const fimVal=r.fim||fimAuto;
+    const fimIsAuto=!r.fim||r.fim===fimAuto;
+    const iniAbr=_ymToAbr(r.inicio||mesAtual);
+    const fimAbr=_ymToAbr(fimVal);
+    return`<div class="simp-extra-row simp-extra-rateio-row" data-ri="${i}">
+<div><input class="simp-extra-input" type="text" placeholder="ex: Pintura fachada" value="${r.desc||''}" onchange="window._simRateios[${i}].desc=this.value"><div class="simp-parcela-lbl" style="font-size:10px;color:var(--text3);margin-top:3px;">Parcela: <strong style="color:var(--amber)">${mensal}</strong>/mês</div></div>
+<input class="simp-extra-input simp-total-input" type="number" inputmode="decimal" placeholder="Total R$" value="${r.total||''}" style="text-align:right;" oninput="simRateioTotalInput(this,${i})" onblur="simRateioTotalBlur(this,${i})">
+<input class="simp-extra-input" type="number" inputmode="numeric" placeholder="12" min="1" max="120" value="${r.parcelas||''}" style="text-align:right;" onchange="if(this.value!==''){window._simRateios[${i}].parcelas=parseInt(this.value)||1;window._simRateios[${i}].fim='';simRenderRateio();renderSimulacoes();}">
+<input class="simp-extra-input simp-mes-input" type="text" placeholder="mai/26" value="${iniAbr}" maxlength="7" style="text-align:center;" onblur="const v=_abrToYm(this.value);if(v){window._simRateios[${i}].inicio=v;window._simRateios[${i}].fim='';simRenderRateio();renderSimulacoes();}else{this.value='${iniAbr}';}">
+<div style="position:relative;">
+  <input class="simp-extra-input simp-mes-input" type="text" placeholder="auto" value="${fimAbr}" maxlength="7" style="text-align:center;${fimIsAuto?'color:var(--teal);border-color:rgba(57,197,207,.35);background:rgba(57,197,207,.06);':''}" title="${fimIsAuto?'Calculado automaticamente':'Editado manualmente'}" onblur="const v=_abrToYm(this.value);if(v){window._simRateios[${i}].fim=v;simRenderRateio();renderSimulacoes();}else if(this.value===''||this.value==='auto'){window._simRateios[${i}].fim='';simRenderRateio();renderSimulacoes();}else{this.value='${fimAbr}';}">
+  <span style="position:absolute;top:50%;right:5px;transform:translateY(-50%);font-size:9px;pointer-events:none;color:${fimIsAuto?'var(--teal)':'var(--text3)'};opacity:.7;">${fimIsAuto?'auto':''}</span>
+</div>
+<button class="simp-extra-rm" onclick="window._simRateios.splice(${i},1);simRenderRateio();renderSimulacoes();">×</button></div>`;
+  }).join('');}
+  const totalMensal=arr.reduce((s,r)=>s+(r.total&&r.parcelas?r.total/Math.max(1,r.parcelas):0),0);
+  const pill=document.getElementById('simp-rateio-total-pill');
+  if(pill){pill.style.display=totalMensal>0?'block':'none';pill.textContent='+'+_simFmt(totalMensal)+'/mês';}
+}
+function simRateioTotalInput(el,i){
+  const v=parseFloat(el.value);
+  if(isNaN(v)||el.value===''||el.value==='-')return;
+  window._simRateios[i].total=v;
+  // Atualiza só o texto "Parcela: X/mês" sem re-renderizar
+  const row=el.closest('[data-ri]');
+  const lbl=row&&row.querySelector('.simp-parcela-lbl');
+  const parc=window._simRateios[i].parcelas||1;
+  if(lbl) lbl.innerHTML=`Parcela: <strong style="color:var(--amber)">${_simFmt(v/Math.max(1,parc))}</strong>/mês`;
+}
+function simRateioTotalBlur(el,i){
+  const v=parseFloat(el.value)||0;
+  window._simRateios[i].total=v;
+  simRenderRateio();
+  renderSimulacoes();
+}
+function simAddRateio(){
+  simAccOpen('rateio');
+  const hoje=new Date();const ini=hoje.getFullYear()+'-'+(String(hoje.getMonth()+1).padStart(2,'0'));
+  window._simRateios.push({desc:'',total:0,parcelas:12,inicio:ini,fim:''});simRenderRateio();
+  setTimeout(()=>{const r=document.querySelectorAll('#simp-rateio-list .simp-extra-input');if(r.length)r[r.length-6].focus();},50);
+}
+function simExtrasMensais(){
+  const colab=(window._simColabs||[]).reduce((s,c)=>s+(parseFloat(c.valor)||0),0);
+  const rateio=(window._simRateios||[]).reduce((s,r)=>s+(r.total&&r.parcelas?r.total/Math.max(1,r.parcelas):0),0);
+  return{colab,rateio,total:colab+rateio};
+}
+
+function simSetFonte(fonte){
+  window._simFonte=fonte;
+  const btnApp=document.getElementById('simp-btn-app');
+  const btnMan=document.getElementById('simp-btn-manual');
+  const panel=document.getElementById('simp-manual-panel');
+  if(fonte==='manual'){if(btnApp){btnApp.style.background='none';btnApp.style.color='var(--text2)';}if(btnMan){btnMan.style.background='var(--blue2)';btnMan.style.color='#fff';}if(panel)panel.style.display='block';}
+  else{if(btnApp){btnApp.style.background='var(--blue2)';btnApp.style.color='#fff';}if(btnMan){btnMan.style.background='none';btnMan.style.color='var(--text2)';}if(panel)panel.style.display='none';}
+  renderSimulacoes();
+}
+
+function syncSimEncargos(){
+  if(window._simEncargosOverride)return;
+  const fr  =parseFloat(document.getElementById('fundo_reserva')?.value)||5;
+  const fo  =parseFloat(document.getElementById('fundo_obras')?.value)||3;
+  const inad=parseFloat(document.getElementById('inadimplencia')?.value)||5;
+  const frEl=document.getElementById('simp-fr');
+  const foEl=document.getElementById('simp-fo');
+  const iEl =document.getElementById('simp-inad');
+  if(frEl){frEl.value=fr;  const lbl=document.getElementById('simp-fr-val');  if(lbl)lbl.textContent=fr.toFixed(1)+'%';}
+  if(foEl){foEl.value=fo;  const lbl=document.getElementById('simp-fo-val');  if(lbl)lbl.textContent=fo.toFixed(1)+'%';}
+  if(iEl) {iEl.value=inad; const lbl=document.getElementById('simp-inad-val');if(lbl)lbl.textContent=inad.toFixed(1)+'%';}
+  _updateSimSyncBadge(false);
+}
+function _updateSimSyncBadge(overridden){
+  const badge=document.getElementById('simp-sync-badge');
+  if(!badge)return;
+  if(overridden){
+    badge.innerHTML=`<span style="color:var(--amber);font-size:11px;">✏ Valores personalizados para simulação</span>
+      <button onclick="window._simEncargosOverride=false;syncSimEncargos();renderSimulacoes();"
+        style="margin-left:8px;font-size:10px;padding:2px 8px;background:none;border:1px solid var(--border);border-radius:var(--rs);color:var(--text2);cursor:pointer;">
+        ↩ Restaurar do condomínio
+      </button>`;
+  } else {
+    badge.innerHTML=`<span style="color:var(--teal);font-size:11px;">✓ Sincronizado com Dados do Condomínio</span>`;
+  }
+}
+function renderSimulacoes(){
+  if(!window._simExtrasInited){simRenderColab();simRenderRateio();
+    if((window._simColabs||[]).length)simAccOpen('colab');
+    if((window._simRateios||[]).length)simAccOpen('rateio');
+    window._simExtrasInited=true;
+  }
+  const c=window._lastCalc||{};
+  const fonte=window._simFonte||'app';
+  const useManual=fonte==='manual';
+  const manDesp=parseFloat(document.getElementById('simp-manual-desp')?.value)||0;
+  const manCota=parseFloat(document.getElementById('simp-manual-cota')?.value)||0;
+  const manN=parseFloat(document.getElementById('simp-manual-n')?.value)||1;
+
+  // Leitura robusta: _lastCalc → inputs do app → array despesas
+  const _appCotaAtual = parseFloat(document.getElementById('cota_atual')?.value)||0;
+  const _appN         = parseFloat(document.getElementById('n_unidades')?.value)||1;
+  const _appNPag      = parseFloat(document.getElementById('n_pagantes')?.value)||_appN;
+  const _appDesp      = (c.totDesp||0)>0 ? c.totDesp
+                        : (typeof calcDespMensal==='function' ? calcDespMensal()
+                           : (typeof despesas!=='undefined'&&Array.isArray(despesas)
+                              ? despesas.reduce((s,d)=>{const v=parseFloat(d.valor)||0;return s+(d.tipo==='anual'?v/12:d.tipo==='semestral'?v/6:v);},0)
+                              : 0));
+
+  const totDespBase = useManual ? manDesp   : (_appDesp>0 ? _appDesp : manDesp);
+  const cotaAtual   = useManual ? manCota   : (_appCotaAtual>0 ? _appCotaAtual : (c.cotaAtual||0)>0 ? c.cotaAtual : manCota);
+  const n           = useManual ? (manN||1) : (_appN>1 ? _appN : (c.n||0)>0 ? c.n : (manN||1));
+  // nPag: unidades pagantes (≤ n); cota = total / nPag
+  const nPag        = useManual ? n : Math.max(1, Math.min(_appNPag>0?_appNPag:n, n));
+
+  // Status informativo
+  const statusEl=document.getElementById('simp-fonte-status');
+  if(statusEl){
+    if(useManual){
+      statusEl.textContent=manDesp>0?'usando valores manuais':'preencha os campos abaixo';
+    } else {
+      const despLabel=totDespBase>0?_simFmt(totDespBase):'—';
+      const cotaLabel=cotaAtual>0?_simFmt(cotaAtual):'—';
+      statusEl.textContent=totDespBase>0
+        ?`despesas: ${despLabel} · cota: ${cotaLabel} · ${n} unid. (${nPag} pagantes)`
+        :'sem dados no app — preencha Dados do Condomínio';
+    }
+  }
+
+  const ipcaPct=parseFloat(document.getElementById('idx_ipca')?.value)||4.83;
+  const custPct=parseFloat(document.getElementById('simp-pct-range')?.value)||8;
+  const despGrowth=parseFloat(document.getElementById('simp-desp-growth')?.value)||6;
+  const maxAnos=parseInt(document.getElementById('simp-anos')?.value)||5;
+
+  // Encargos
+  const inadSlider=document.getElementById('simp-inad');
+  const frSlider=document.getElementById('simp-fr');
+  const foSlider=document.getElementById('simp-fo');
+  if(!window._simEncargosInit && fonte==='app'){
+    const appInad=parseFloat(document.getElementById('inadimplencia')?.value)||(c.inadPct||5);
+    const appFr=parseFloat(document.getElementById('fundo_reserva')?.value)||(c.frPct||5);
+    const appFo=parseFloat(document.getElementById('fundo_obras')?.value)||(c.foPct||3);
+    if(inadSlider){inadSlider.value=appInad;document.getElementById('simp-inad-val').textContent=appInad.toFixed(1)+'%';}
+    if(frSlider){frSlider.value=appFr;document.getElementById('simp-fr-val').textContent=appFr.toFixed(1)+'%';}
+    if(foSlider){foSlider.value=appFo;document.getElementById('simp-fo-val').textContent=appFo.toFixed(1)+'%';}
+    window._simEncargosInit=true;
+  }
+  const inadPct=parseFloat(inadSlider?.value)||0;
+  const frPct=parseFloat(frSlider?.value)||0;
+  const foPct=parseFloat(foSlider?.value)||0;
+
+  function simCotaBase(desp,u,fr,fo,inad){if(u<=0)return 0;const sub=desp*(1+fr/100+fo/100);return sub/(u*(inad<100?1-inad/100:1));}
+  function simTotal(desp,u,fr,fo,inad){return simCotaBase(desp,u,fr,fo,inad)*u;}
+  // cota = total arrecadação / nPag (isentos não dividem o custo)
+  function simCotaPag(desp,uTotal,uPag,fr,fo,inad,rateio){
+    if(uPag<=0)return 0;
+    // Rateios extraordinários: todos os uTotal pagam (÷ n)
+    // Demais despesas: apenas uPag pagantes (÷ nPag)
+    const r=rateio||0;
+    const fator=(1+fr/100+fo/100)/(inad<100?1-inad/100:1);
+    return fator*((desp-r)/uPag+r/uTotal);
+  }
+
+  const extras=simExtrasMensais();
+  const totDesp_eff=totDespBase+extras.total;
+  const totalCalc=simTotal(totDesp_eff,n,frPct,foPct,inadPct);
+  const cotaCalcOk=simCotaPag(totDesp_eff,n,nPag,frPct,foPct,inadPct,extras.rateio);
+  const arrecAtual=cotaAtual*nPag;
+  const saldoAtual=arrecAtual-totalCalc;
+
+  // Impacto extras
+  const impactEl=document.getElementById('simp-extras-impact');
+  const impDespEl=document.getElementById('simp-extras-desp-pill');
+  const impCotaEl=document.getElementById('simp-extras-cota-pill');
+  if(impactEl){const hasExtras=extras.total>0;impactEl.style.display=hasExtras?'flex':'none';if(hasExtras&&n>0){const extraPorUnidade=simCotaPag(totDesp_eff,n,nPag,frPct,foPct,inadPct,extras.rateio)-simCotaPag(totDespBase,n,nPag,frPct,foPct,inadPct,0);if(impDespEl)impDespEl.textContent='+'+_simFmt(extras.total)+'/mes nas despesas';if(impCotaEl)impCotaEl.textContent='+'+_simFmt(extraPorUnidade)+'/unidade na cota';}}
+
+  // KPIs
+  const kDesp=document.getElementById('simp-k-desp');
+  const kCotaAtual=document.getElementById('simp-k-cota-atual');
+  const kCotaCalc=document.getElementById('simp-k-cota-calc');
+  const kSaldo=document.getElementById('simp-k-saldo');
+  const kSaldoS=document.getElementById('simp-k-saldo-s');
+  const kSaldoCard=document.getElementById('simp-k-saldo-card');
+  const kSaldoLbl=document.getElementById('simp-k-saldo-label');
+  const kDefasagem=document.getElementById('simp-k-defasagem');
+  if(kDesp){kDesp.textContent=totDesp_eff>0?_simFmt(totDesp_eff):'--';kDesp.parentElement.querySelector('.simp-kpi-s').textContent=extras.total>0?`inclui +${_simFmt(extras.total)} de extras`:'orcamento operacional';}
+  if(kCotaAtual)kCotaAtual.textContent=cotaAtual>0?_simFmt(cotaAtual):'--';
+  if(kDefasagem&&cotaAtual>0){try{const anoAtual=new Date().getFullYear();const hist=(typeof historico!=='undefined'&&Array.isArray(historico))?historico:[];const ultReaj=hist.filter(h=>h.cota>0&&Math.round(h.cota)!==Math.round(cotaAtual)).sort((a,b)=>b.ano-a.ano)[0];if(ultReaj){const anos=anoAtual-ultReaj.ano;kDefasagem.textContent=anos>0?`sem reajuste ha ${anos} ano${anos>1?'s':''} (desde ${ultReaj.ano})`:'por unidade / mes';kDefasagem.style.color=anos>=3?'var(--red)':anos>=2?'var(--amber)':'var(--text3)';kDefasagem.style.fontWeight=anos>=2?'600':'400';}else{kDefasagem.textContent='por unidade / mes';kDefasagem.style.color='var(--text3)';}}catch(e){if(kDefasagem)kDefasagem.textContent='por unidade / mes';}}
+  if(kCotaCalc){
+    kCotaCalc.textContent=cotaCalcOk>0?_simFmt(cotaCalcOk):'--';
+    kCotaCalc.style.color='var(--amber)';
+    const calcCard=document.getElementById('simp-k-cota-calc-card');
+    if(calcCard){calcCard.style.borderColor='rgba(239,159,39,.45)';calcCard.style.background='rgba(239,159,39,.06)';}
+  }
+  const kCotaRec=document.getElementById('simp-k-cota-rec');
+  const recCard=document.getElementById('simp-k-cota-rec-card');
+  if(kCotaRec&&totDesp_eff>0){
+    const cotaRec=simCotaPag(totDesp_eff,n,nPag,10,10,10,extras.rateio);
+    kCotaRec.textContent=cotaRec>0?_simFmt(cotaRec):'--';
+    if(recCard){recCard.style.borderColor='rgba(99,153,34,.45)';recCard.style.background='rgba(99,153,34,.06)';}
+  } else if(recCard){recCard.style.borderColor='';recCard.style.background='';}
+  if(kSaldo&&totDesp_eff>0){const isDeficit=saldoAtual<0;kSaldo.textContent=_simFmt(Math.abs(saldoAtual));kSaldo.style.color=isDeficit?'var(--red)':'var(--green)';kSaldo.style.fontSize=Math.abs(saldoAtual)>9999?'21px':'26px';if(kSaldoS)kSaldoS.textContent=isDeficit?'deficit atual / mes':'superavit atual / mes';if(kSaldoLbl)kSaldoLbl.textContent=isDeficit?'Deficit mensal':'Superavit mensal';if(kSaldoCard){kSaldoCard.style.borderColor=isDeficit?'rgba(248,81,73,.5)':'rgba(63,185,80,.4)';kSaldoCard.style.background=isDeficit?'rgba(248,81,73,.06)':'rgba(63,185,80,.06)';}}
+
+  // Cenarios Ano 1
+  const despAno1=totDesp_eff*(1+despGrowth/100);
+  const totalAno1=simTotal(despAno1,n,frPct,foPct,inadPct);
+  const cota0=cotaAtual,cota1=cotaAtual*(1+ipcaPct/100),cota2=cotaAtual*(1+custPct/100);
+  const saldo0=(cota0*nPag)-totalAno1,saldo1=(cota1*nPag)-totalAno1,saldo2=(cota2*nPag)-totalAno1;
+  const deficit0anual=Math.abs(Math.min(saldo0,0))*12;
+  function setScen(idC,idD,idE,cota,pct,eColor,eVal){
+    const el=document.getElementById(idC);if(el)el.textContent=cotaAtual>0?_simFmt(cota):'--';
+    const de=document.getElementById(idD);if(de)de.textContent=cotaAtual>0?(pct===0?'Sem alteracao':(pct>0?'+ ':'-')+Math.abs(pct).toFixed(1)+'% vs atual'):'--';
+    const ex=document.getElementById(idE);if(ex){ex.textContent=_simFmt(Math.abs(eVal));ex.style.color=eColor;}
+  }
+  setScen('simp-s0-cota','simp-s0-delta','simp-s0-deficit',cota0,0,'var(--red)',deficit0anual);
+  setScen('simp-s1-cota','simp-s1-delta','simp-s1-saldo',cota1,ipcaPct,'var(--amber)',Math.abs(saldo1));
+  setScen('simp-s2-cota','simp-s2-delta','simp-s2-saldo',cota2,custPct,'var(--green)',Math.abs(saldo2));
+  const cotaNec=cotaCalcOk>0?simCotaPag(despAno1,n,nPag,frPct,foPct,inadPct,extras.rateio*(1+despGrowth/100)):0;
+  const diffNecVsAtual=cotaAtual>0?((cotaNec-cotaAtual)/cotaAtual*100):null;
+  const diffNecVsCustom=cotaNec-cota2;
+  const s3C=document.getElementById('simp-s3-cota');if(s3C)s3C.textContent=cotaNec>0?_simFmt(cotaNec):'--';
+  const s3D=document.getElementById('simp-s3-delta');if(s3D&&diffNecVsAtual!==null)s3D.textContent=cotaAtual>0?(diffNecVsAtual>=0?'+ ':'-')+Math.abs(diffNecVsAtual).toFixed(1)+'% vs atual':'--';
+  const s3V=document.getElementById('simp-s3-vs');if(s3V&&cotaNec>0){s3V.textContent=diffNecVsCustom>0?'falta '+_simFmt(diffNecVsCustom):diffNecVsCustom<0?'sobra '+_simFmt(Math.abs(diffNecVsCustom)):'Proposta = Necessaria';s3V.style.color=diffNecVsCustom>50?'var(--red)':diffNecVsCustom<-50?'var(--green)':'var(--blue2)';}
+  const s3N=document.getElementById('simp-s3-growth-note');if(s3N)s3N.textContent='despesas projetadas com +'+despGrowth.toFixed(1)+'% de crescimento';
+
+  // Cota recomendada (FR 10% + FO 10% + Inad. 10%)
+  const cotaRec=totDesp_eff>0?simCotaPag(totDesp_eff,n,nPag,10,10,10,extras.rateio):0;
+  const diffRecVsAtual=cotaAtual>0?((cotaRec-cotaAtual)/cotaAtual*100):null;
+  const reservaExtra=(cotaRec-cotaCalcOk)*nPag;
+  const s4C=document.getElementById('simp-s4-cota');if(s4C)s4C.textContent=cotaRec>0?_simFmt(cotaRec):'--';
+  const s4D=document.getElementById('simp-s4-delta');if(s4D)s4D.textContent=diffRecVsAtual!==null?(diffRecVsAtual>=0?'+ ':'-')+Math.abs(diffRecVsAtual).toFixed(1)+'% vs atual':'--';
+  const s4E=document.getElementById('simp-s4-extra');if(s4E&&cotaRec>0){s4E.textContent=reservaExtra>0?'+'+_simFmt(reservaExtra)+'/mês':_simFmt(reservaExtra)+'/mês';s4E.style.color=reservaExtra>=0?'var(--teal)':'var(--red)';}
+
+  // Grafico
+  const chartEl=document.getElementById('simp-chart-bars');
+  if(chartEl&&cotaAtual>0&&totDesp_eff>0){
+    const anos=Array.from({length:maxAnos},(_,i)=>i+1);
+    const allC=anos.flatMap(a=>{const dA=totDesp_eff*Math.pow(1+despGrowth/100,a);const rA=(extras.rateio||0)*Math.pow(1+despGrowth/100,a);return[cotaAtual,cotaAtual*Math.pow(1+ipcaPct/100,a),cotaAtual*Math.pow(1+custPct/100,a),simCotaPag(dA,n,nPag,frPct,foPct,inadPct,rA)];});
+    const maxCota=Math.max(...allC,cotaAtual)*1.06;
+    chartEl.innerHTML=anos.map(a=>{const dA=totDesp_eff*Math.pow(1+despGrowth/100,a);const rA=(extras.rateio||0)*Math.pow(1+despGrowth/100,a);const c0=cotaAtual,c1=cotaAtual*Math.pow(1+ipcaPct/100,a),c2=cotaAtual*Math.pow(1+custPct/100,a),cN=simCotaPag(dA,n,nPag,frPct,foPct,inadPct,rA);const h0=Math.max(4,(c0/maxCota)*92),h1=Math.max(4,(c1/maxCota)*92),h2=Math.max(4,(c2/maxCota)*92),hN=Math.max(4,(cN/maxCota)*92);return`<div class="simp-bar-grp"><div class="simp-bar-cols"><div class="simp-bar-col" style="height:${h0}px;background:var(--red);opacity:.75;" title="Sem reajuste: ${_simFmt(c0)}"></div><div class="simp-bar-col" style="height:${h1}px;background:var(--amber);opacity:.85;" title="IPCA ${ipcaPct.toFixed(1)}%: ${_simFmt(c1)}"></div><div class="simp-bar-col" style="height:${h2}px;background:var(--green);" title="Personalizado ${custPct.toFixed(1)}%: ${_simFmt(c2)}"></div><div class="simp-bar-col" style="height:${hN}px;background:var(--blue2);opacity:.6;" title="Equilibrio: ${_simFmt(cN)}"></div></div><div class="simp-bar-yr">Ano ${a}</div></div>`;}).join('');
+  }else if(chartEl){chartEl.innerHTML='<div style="font-size:12px;color:var(--text3);margin:auto">Preencha os dados para ver o grafico.</div>';}
+
+  // Tabela
+  const tbody=document.getElementById('simp-proj-tbody');
+  if(tbody&&cotaAtual>0&&totDesp_eff>0){const ANO_BASE=new Date().getFullYear();tbody.innerHTML='';for(let a=1;a<=maxAnos;a++){const dA=totDesp_eff*Math.pow(1+despGrowth/100,a);const totA=simTotal(dA,n,frPct,foPct,inadPct);const c0=cotaAtual,c1=cotaAtual*Math.pow(1+ipcaPct/100,a),c2=cotaAtual*Math.pow(1+custPct/100,a);const sl0=(c0*nPag)-totA,sl1=(c1*nPag)-totA,sl2=(c2*nPag)-totA;const col=v=>v>=0?'var(--green)':'var(--red)';const sign=v=>v>=0?'+':'';const tr=document.createElement('tr');tr.innerHTML=`<td style="color:var(--text3)">${ANO_BASE+a}</td><td>${_simFmt(dA)} <span style="font-size:10px;color:var(--text3)">(total ${_simFmt(totA)})</span></td><td style="color:var(--red)">${_simFmt(c0)}</td><td style="color:${col(sl0)};font-weight:600">${sign(sl0)}${_simFmt(sl0)}</td><td style="color:var(--amber)">${_simFmt(c1)}</td><td style="color:${col(sl1)};font-weight:600">${sign(sl1)}${_simFmt(sl1)}</td><td style="color:var(--green)">${_simFmt(c2)}</td><td style="color:${col(sl2)};font-weight:600">${sign(sl2)}${_simFmt(sl2)}</td>`;tbody.appendChild(tr);}}
+  else if(tbody){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:20px">Preencha os dados acima.</td></tr>';}
+
+  // Despesas projetadas (ordenadas)
+  const despEl=document.getElementById('simp-desp-list');
+  if(despEl){const arr=(typeof despesas!=='undefined'&&Array.isArray(despesas)&&despesas.length>0)?despesas:[];if(arr.length>0){const _gv=d=>typeof getDespesaMensalValor==='function'?getDespesaMensalValor(d):(parseFloat(d.valor)||0);const sorted=[...arr].sort((a,b)=>_gv(b)-_gv(a));const maxV=Math.max(...sorted.map(_gv),1);despEl.innerHTML=sorted.map(d=>{const v=_gv(d);const v1=v*(1+ipcaPct/100),v2=v*(1+custPct/100);const w=Math.max(3,(v/maxV*100)).toFixed(1);return`<div class="simp-desp-item"><span class="simp-desp-name">${d.desc||'Despesa'}</span><div class="simp-desp-bar-wrap"><div class="simp-desp-fill" style="width:${w}%;background:var(--blue2);opacity:.7"></div></div><span class="simp-desp-curr">${_simFmt(v)}</span><span style="font-size:11px;color:var(--amber);min-width:70px;text-align:right">${_simFmt(v1)}</span><span style="font-size:12px;font-weight:600;color:var(--green);min-width:70px;text-align:right">${_simFmt(v2)}</span></div>`;}).join('');}else{despEl.innerHTML='<div style="font-size:12px;color:var(--text3);padding:12px 0">Adicione despesas em Dados do Condominio para ver a projecao por item.</div>';}}
+
+  // Texto explicativo
+  const explEl=document.getElementById('simp-explain-text');
+  if(explEl&&cotaAtual>0&&totDesp_eff>0){const diffCota=_simFmt(Math.abs(cota2-cotaAtual));const ganho2=saldo2>0?_simFmt(saldo2*12):null;explEl.innerHTML=`<p><strong>Situacao atual:</strong> As despesas operacionais somam <strong>${_simFmt(totDesp_eff)}/mes</strong>. Com FR (${frPct.toFixed(1)}%), FO (${foPct.toFixed(1)}%) e inadimplencia (${inadPct.toFixed(1)}%), o total necessario e <strong>${_simFmt(totalCalc)}/mes</strong>, ou seja <strong>${_simFmt(cotaCalcOk)}/unidade</strong>. A cota vigente e <strong>${_simFmt(cotaAtual)}</strong>, gerando ${saldoAtual>=0?'superavit':'deficit'} de <strong>${_simFmt(Math.abs(saldoAtual))}/mes</strong>.</p>${saldo0<0?`<p><strong>Sem reajuste:</strong> Com crescimento de ${despGrowth.toFixed(1)}% nas despesas, o deficit sera <strong>${_simFmt(Math.abs(saldo0))}/mes</strong> (${_simFmt(deficit0anual)}/ano).</p>`:''}<p><strong>IPCA (${ipcaPct.toFixed(1)}%):</strong> Cota passaria para <strong>${_simFmt(cota1)}</strong>, ${saldo1>=0?'superavit':'deficit'} de <strong>${_simFmt(Math.abs(saldo1))}/mes</strong>.</p><p><strong>Proposta (${custPct.toFixed(1)}%):</strong> Variacao de <strong>${diffCota}/unidade</strong>, cota <strong>${_simFmt(cota2)}</strong>. ${saldo2>=0?`Reserva mensal de <strong>${_simFmt(saldo2)}</strong>${ganho2?' ('+ganho2+'/ano)':''}.`:`Deficit de <strong>${_simFmt(Math.abs(saldo2))}/mes</strong>.`}</p><p style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);color:var(--text3);">Projecao com FR ${frPct.toFixed(1)}% + FO ${foPct.toFixed(1)}% + inadimplencia ${inadPct.toFixed(1)}%. Valores estimados para assembleia.</p>`;}
+  else if(explEl){explEl.textContent='Preencha os dados do condominio para gerar a explicacao automatica.';}
+
+  // Tabela retroativa
+  renderRetroativo();
+  // Breakdown composição
+  renderBreakdown(totDesp_eff, n, nPag, frPct, foPct, inadPct, cotaCalcOk, totalCalc, extras.rateio);
+}
+
+// ── RETROATIVO ──
+// Índices históricos reais por ano (pré-carregados, editáveis na tabela)
+const _retroIndices = {
+  ipca:  {2020:4.52, 2021:10.06, 2022:5.79, 2023:4.62, 2024:4.83, 2025:5.10},
+  igpm:  {2020:23.14,2021:17.78, 2022:5.45, 2023:-3.18,2024:6.54, 2025:6.80},
+  inpc:  {2020:5.45, 2021:10.16, 2022:5.93, 2023:3.71, 2024:5.10, 2025:5.50},
+};
+// Overrides editados pelo usuário na tabela
+window._retroCustom = window._retroCustom || {};
+
+function _retroGetIndice(tipo, ano){
+  if(window._retroCustom[ano] !== undefined) return window._retroCustom[ano];
+  if(tipo==='custom') return 0;
+  return (_retroIndices[tipo]||{})[ano] || 0;
+}
+
+function renderRetroativo(){
+  const tbody = document.getElementById('retro-tbody');
+  const destaque = document.getElementById('retro-destaque');
+  if(!tbody) return;
+
+  const tipo = document.getElementById('retro-indice')?.value || 'ipca';
+  const c = window._lastCalc || {};
+  const cotaAtualApp = parseFloat(document.getElementById('cota_atual')?.value)||(c.cotaAtual||0);
+  const n = parseFloat(document.getElementById('n_unidades')?.value)||(c.n||1);
+  const frPct  = parseFloat(document.getElementById('simp-fr')?.value)||0;
+  const foPct  = parseFloat(document.getElementById('simp-fo')?.value)||0;
+  const inadPct= parseFloat(document.getElementById('simp-inad')?.value)||0;
+  const ANO_ATUAL = new Date().getFullYear();
+
+  // Detectar ano base (último reajuste real) via historico
+  const hist = (typeof historico!=='undefined'&&Array.isArray(historico)) ? historico : [];
+
+  // Montar lista de anos: historico + ano atual
+  // Precisamos do ano base (antes do historico) para calcular a reajustada
+  const anosHist = hist.map(h=>({ano:h.ano, cotaReal:h.cota, despMensal:h.despesas/12}));
+  // Adicionar ano atual
+  const totDespAtual = (c.totDesp||0)>0 ? c.totDesp
+    : (typeof calcDespMensal==='function' ? calcDespMensal() : 0);
+  anosHist.push({ano:ANO_ATUAL, cotaReal:cotaAtualApp, despMensal:totDespAtual});
+
+  if(!anosHist.length || cotaAtualApp<=0){ tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:16px">Preencha a cota vigente em Dados do Condomínio.</td></tr>'; return; }
+
+  // Encontrar ano base = ano anterior ao primeiro do historico
+  const primeiroAno = anosHist[0].ano;
+  const anoBase = primeiroAno - 1;
+  // Cota base: cota real do primeiro ano historico ÷ (1 + indice do primeiroAno)
+  // Ou melhor: usar a cota do primeiro historico como base e calcular dali
+  // Se não temos historico anterior, usar cotaAtualApp como base
+  const cotaBaseVal = anosHist[0].cotaReal > 0 ? anosHist[0].cotaReal : cotaAtualApp;
+
+  function cotaNecessaria(despMensal){
+    if(!n||n<=0||!despMensal) return 0;
+    const sub = despMensal*(1+frPct/100+foPct/100);
+    return sub/(n*(inadPct<100?1-inadPct/100:1));
+  }
+
+  // Construir rows: começar com o ano base (antes de aplicar qualquer índice)
+  const rows = [];
+  let cotaReaj = cotaBaseVal; // começa com cota do primeiro ano conhecido
+
+  anosHist.forEach((item, idx) => {
+    if(idx === 0){
+      // Primeiro ano: ponto de partida, sem reajuste aplicado ainda
+      const nec = cotaNecessaria(item.despMensal);
+      rows.push({
+        ano: item.ano,
+        indice: null, // sem índice (é a base)
+        cotaReal: item.cotaReal,
+        cotaReaj: cotaReaj,
+        cotaNec: nec,
+        isBase: true,
+        isAtual: item.ano === ANO_ATUAL,
+      });
+    } else {
+      // Aplicar índice do ano anterior ao calcular este ano
+      const anoAnterior = anosHist[idx-1].ano;
+      const idx_pct = _retroGetIndice(tipo, anoAnterior);
+      cotaReaj = cotaReaj * (1 + idx_pct/100);
+      const nec = cotaNecessaria(item.despMensal);
+      rows.push({
+        ano: item.ano,
+        indice: idx_pct,
+        cotaReal: item.cotaReal,
+        cotaReaj: cotaReaj,
+        cotaNec: nec,
+        isBase: false,
+        isAtual: item.ano === ANO_ATUAL,
+      });
+    }
+  });
+
+  // Acumulado total: quanto a cota deveria ter subido desde o início
+  const ultimaRow = rows[rows.length-1];
+  const acumulado = ultimaRow ? ((ultimaRow.cotaReaj - rows[0].cotaReaj) / rows[0].cotaReaj * 100) : 0;
+  const defasagem = ultimaRow ? ((ultimaRow.cotaReal - ultimaRow.cotaReaj) / ultimaRow.cotaReaj * 100) : 0;
+
+  const f = v => _simFmt(v);
+  const fPct = v => (v===null?'base':(v>=0?'+':'')+v.toFixed(2)+'%');
+  const fGap = v => {
+    const cls = v>=0?'color:var(--green)':'color:var(--red)';
+    return `<span style="${cls};font-weight:600">${v>=0?'+':''}${f(v)}</span>`;
+  };
+
+  tbody.innerHTML = rows.map(r => {
+    const gapReaj = r.cotaReaj - r.cotaNec;
+    const gapReal = r.cotaReal - r.cotaNec;
+    const isAtualStyle = r.isAtual
+      ? 'background:rgba(56,139,253,.06);font-weight:600;border-top:2px solid rgba(56,139,253,.3);'
+      : '';
+    const indiceCell = r.isBase
+      ? `<td style="text-align:right;color:var(--text3);font-size:11px;">base</td>`
+      : `<td style="text-align:right;">
+           <input type="number" value="${(r.indice||0).toFixed(2)}" step="0.01" min="-20" max="50"
+             style="width:64px;padding:3px 6px;font-size:12px;text-align:right;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);color:var(--text)"
+             onchange="window._retroCustom[${r.ano-1}]=parseFloat(this.value)||0;renderRetroativo()"
+             oninput="if(this.value===''||this.value==='-')return;window._retroCustom[${r.ano-1}]=parseFloat(this.value)||0;renderRetroativo()">
+         </td>`;
+    return `<tr style="${isAtualStyle}">
+      <td style="font-weight:${r.isAtual?'700':'400'};color:${r.isAtual?'var(--blue2)':'var(--text)'}">
+        ${r.ano}${r.isAtual?' ← atual':''}
+      </td>
+      ${indiceCell}
+      <td style="text-align:right;color:var(--text2)">${r.cotaReal>0?f(r.cotaReal):'—'}</td>
+      <td style="text-align:right;color:var(--teal);font-weight:600">${f(r.cotaReaj)}</td>
+      <td style="text-align:right;color:var(--blue2);font-weight:600">${r.cotaNec>0?f(r.cotaNec):'—'}</td>
+      <td style="text-align:right">${r.cotaNec>0?fGap(gapReaj):'—'}</td>
+      <td style="text-align:right">${r.cotaNec>0?fGap(gapReal):'—'}</td>
+    </tr>`;
+  }).join('');
+
+  // Destaque: resumo do rombo acumulado
+  if(destaque && ultimaRow && ultimaRow.cotaNec>0){
+    const gapFinal = ultimaRow.cotaReaj - ultimaRow.cotaNec;
+    const gapRealFinal = ultimaRow.cotaReal - ultimaRow.cotaNec;
+    const anoInicio = rows[0].ano;
+    destaque.style.display = 'block';
+    const corGap = gapFinal<0?'var(--red)':'var(--green)';
+    const corReal = gapRealFinal<0?'var(--red)':'var(--green)';
+    destaque.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+        <div>
+          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Reajuste acumulado ${anoInicio}→${ultimaRow.ano}</div>
+          <div style="font-size:18px;font-weight:700;color:var(--teal)">+${acumulado.toFixed(1)}%</div>
+          <div style="font-size:11px;color:var(--text3)">${f(rows[0].cotaReaj)} → ${f(ultimaRow.cotaReaj)}</div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Reajustada vs Necessária (${ultimaRow.ano})</div>
+          <div style="font-size:18px;font-weight:700;color:${corGap}">${gapFinal>=0?'+':''}${f(gapFinal)}/unid.</div>
+          <div style="font-size:11px;color:var(--text3)">${gapFinal<0?'Mesmo reajustando, ainda faltaria cobrir o necessário':'Reajuste cobre o necessário com margem'}</div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Cota real vs Necessária (${ultimaRow.ano})</div>
+          <div style="font-size:18px;font-weight:700;color:${corReal}">${gapRealFinal>=0?'+':''}${f(gapRealFinal)}/unid.</div>
+          <div style="font-size:11px;color:var(--text3)">${f(ultimaRow.cotaReal)} cobrada vs ${f(ultimaRow.cotaNec)} necessária</div>
+        </div>
+      </div>`;
+  } else if(destaque){
+    destaque.style.display='none';
+  }
+}
+// ── FIM RETROATIVO ──
+
+// ── BREAKDOWN composição da cota ──
+function renderBreakdown(totDesp, n, nPag, frPct, foPct, inadPct, cotaCalcOk, totalCalc, extrasRateio){
+  const rowsEl  = document.getElementById('simp-bk-rows');
+  const totalEl = document.getElementById('simp-bk-total-row');
+  const cotaEl  = document.getElementById('simp-bk-cota-total');
+  const totValEl= document.getElementById('simp-bk-total-val');
+  const totUndEl= document.getElementById('simp-bk-total-unid');
+  if(!rowsEl) return;
+
+  if(!totDesp || !n || cotaCalcOk<=0){
+    rowsEl.innerHTML='<div style="font-size:12px;color:var(--text3);padding:8px 0;">Preencha os dados do condomínio para ver a composição.</div>';
+    if(totalEl) totalEl.style.display='none';
+    if(cotaEl)  cotaEl.textContent='—';
+    return;
+  }
+
+  // Rateios extraordinários: divididos por n (todos pagam)
+  // Demais despesas + fundos + inadimplência: divididos por nPag (só pagantes)
+  const nP    = nPag || n;
+  const r     = extrasRateio || 0;
+  const sub   = totDesp * (1 + frPct/100 + foPct/100);
+  const frVal = totDesp * frPct/100;
+  const foVal = totDesp * foPct/100;
+  const inadV = inadPct<100 ? sub * (inadPct/100) / (1 - inadPct/100) : 0;
+  const total = sub + inadV;
+
+  // Por unidade — despesas base ÷ nPag, rateios ÷ n
+  const despU = (totDesp - r) / nP + r / n;
+  const frU   = frVal / nP;
+  const foU   = foVal / nP;
+  const inadU = inadV / nP;
+  const totalU= despU + frU + foU + inadU;
+
+  const items = [
+    { label:'Despesas operacionais', val: despU, totalVal: totDesp, pct: totDesp/total*100,  color:'#2f81f7', dot:'#2f81f7',
+      tip:'Soma de todas as despesas mensais cadastradas' },
+    { label:`Fundo de Reserva (${frPct.toFixed(1)}%)`,  val: frU,   totalVal: frVal,  pct: frVal/total*100,   color:'var(--teal)', dot:'#39c5cf',
+      tip:'Reserva para manutenções emergenciais (sobre as despesas)' },
+    { label:`Fundo de Obras (${foPct.toFixed(1)}%)`,    val: foU,   totalVal: foVal,  pct: foVal/total*100,   color:'var(--green)', dot:'#3fb950',
+      tip:'Reserva para obras e melhorias (sobre as despesas)' },
+    { label:`Inadimplência (${inadPct.toFixed(1)}%)`,   val: inadU, totalVal: inadV,  pct: inadV/total*100,   color:'var(--red)', dot:'#f85149',
+      tip:'Reserva para cobrir o percentual de inadimplência estimado' },
+  ].filter(it => it.val > 0.01);
+
+  const maxPct = Math.max(...items.map(i=>i.pct), 1);
+
+  rowsEl.innerHTML = items.map(item => `
+    <div class="simp-bk-row" title="${item.tip}">
+      <div class="simp-bk-name">
+        <span class="simp-bk-dot" style="background:${item.dot}"></span>
+        ${item.label}
+      </div>
+      <div class="simp-bk-bar-wrap">
+        <div class="simp-bk-bar-fill" style="width:${Math.min(100,(item.pct/maxPct*100)).toFixed(1)}%;background:${item.dot};opacity:.8;"></div>
+      </div>
+      <div class="simp-bk-pct">${item.pct.toFixed(1)}%</div>
+      <div class="simp-bk-val" style="color:${item.dot}">${_simFmt(item.val)}</div>
+    </div>`).join('');
+
+  if(cotaEl)  cotaEl.textContent = _simFmt(totalU);
+  if(totalEl) totalEl.style.display='flex';
+  if(totValEl)totValEl.textContent = _simFmt(total);
+  if(totUndEl){const pag=Math.max(1,Math.min(nP,n));totUndEl.textContent=`${n} unidade${n>1?'s':''} (${pag} pagantes) × ${_simFmt(totalU)}`;}
+}
+// ── FIM BREAKDOWN ──
+
+function copiarExplicacao(){const el=document.getElementById('simp-explain-text');if(!el)return;navigator.clipboard?.writeText(el.innerText||el.textContent).then(()=>{if(typeof showToast==='function')showToast('Texto copiado!','success',2000);}).catch(()=>{if(typeof showToast==='function')showToast('Selecione e copie manualmente.','info',2500);});}
+
+// ── COMUNICADO PDF ──
+function _ca4Fmt(v){if(v===null||v===undefined)return '--';return Number(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
+function openComunicadoModal(){
+  const modal=document.getElementById('modal-comunicado');if(!modal)return;
+  modal.classList.add('on');
+  const c=window._lastCalc||{};
+  const nomeEl=document.getElementById('com-nome');const compEl=document.getElementById('com-competencia');
+  if(nomeEl&&!nomeEl.value)nomeEl.value=document.getElementById('condo_nome')?.value||c.condoNome||'';
+  if(compEl&&!compEl.value){const comp=document.getElementById('competencia')?.value||c.competencia||'';if(comp&&comp.includes('/')){const meses={jan:'01',fev:'02',mar:'03',abr:'04',mai:'05',jun:'06',jul:'07',ago:'08',set:'09',out:'10',nov:'11',dez:'12'};const[m,a]=comp.split('/');const mn=meses[m?.toLowerCase()];if(mn&&a)compEl.value=a+'-'+mn;}else if(comp){compEl.value=comp;}else{const h=new Date();compEl.value=h.getFullYear()+'-'+(String(h.getMonth()+1).padStart(2,'0'));}}
+  renderComunicadoPreview();
+}
+function closeComunicadoModal(){document.getElementById('modal-comunicado')?.classList.remove('on');}
+
+function _comGetData(){
+  const c=window._lastCalc||{};const fonte=window._simFonte||'app';const useManual=fonte==='manual';
+  const manDesp=parseFloat(document.getElementById('simp-manual-desp')?.value)||0;
+  const manCota=parseFloat(document.getElementById('simp-manual-cota')?.value)||0;
+  const manN=parseFloat(document.getElementById('simp-manual-n')?.value)||1;
+  // Fallback direto nos inputs do app
+  const _appCotaAtual=parseFloat(document.getElementById('cota_atual')?.value)||0;
+  const _appN=parseFloat(document.getElementById('n_unidades')?.value)||1;
+  const _appNPagC=parseFloat(document.getElementById('n_pagantes')?.value)||_appN;
+  const _appDesp=(c.totDesp||0)>0?c.totDesp:(typeof calcDespMensal==='function'?calcDespMensal():0);
+  const totDespBase=useManual?manDesp:(_appDesp>0?_appDesp:manDesp);
+  const cotaAtual=useManual?manCota:(_appCotaAtual>0?_appCotaAtual:(c.cotaAtual||0)>0?c.cotaAtual:manCota);
+  const n=useManual?manN:(_appN>1?_appN:(c.n||0)>0?c.n:manN);
+  const nPagC=useManual?n:Math.max(1,Math.min(_appNPagC,n));
+  const extras=typeof simExtrasMensais==='function'?simExtrasMensais():{total:0,colab:0,rateio:0};
+  const totDesp=totDespBase+(extras?.total||0);
+  const frPct=parseFloat(document.getElementById('simp-fr')?.value)||0;
+  const foPct=parseFloat(document.getElementById('simp-fo')?.value)||0;
+  const inadPct=parseFloat(document.getElementById('simp-inad')?.value)||0;
+  const ipcaPct=parseFloat(document.getElementById('idx_ipca')?.value)||4.83;
+  const custPct=parseFloat(document.getElementById('simp-pct-range')?.value)||8;
+  const despGrowth=parseFloat(document.getElementById('simp-desp-growth')?.value)||0;
+  function cotaCalc(d){return nPagC>0?d*(1+frPct/100+foPct/100)/(nPagC*(1-inadPct/100)):0;}
+  const cotaCalcAtual=cotaCalc(totDesp);
+  const despAno1=totDesp*(1+despGrowth/100);
+  const totAno1=cotaCalc(despAno1)*nPagC;
+  const cota0=cotaAtual,cota1=cotaAtual*(1+ipcaPct/100),cota2=cotaAtual*(1+custPct/100);
+  const saldo0=(cota0*nPagC)-totAno1,saldo1=(cota1*nPagC)-totAno1,saldo2=(cota2*nPagC)-totAno1;
+  const destaque=document.getElementById('com-cenario-destaque')?.value||'custom';
+  // Destaque sempre usa a cota NECESSÁRIA (equilíbrio real) como referência principal
+  const cotaDest=cotaCalcAtual;
+  const diffUnid=cotaDest-cotaAtual;
+  const pctNec=cotaAtual>0?((cotaCalcAtual-cotaAtual)/cotaAtual*100):0;
+  // Proposta selecionada (para referência secundária no PDF)
+  const cotaProposta=destaque==='ipca'?cota1:cota2;
+  const pctProposta=destaque==='ipca'?ipcaPct:custPct;
+  // Cota recomendada: FR 10% + FO 10% + Inad 10% sobre despesas atuais
+  const cotaRec=nPagC>0?totDesp*(1+0.10+0.10)/(nPagC*(1-0.10)):0;
+  // Equilíbrio projetado: cota necessária no Ano 1 (com crescimento de despesas)
+  const cotaNecProj=cotaCalc(despAno1);
+  return{totDespBase,totDesp,cotaAtual,n,nPagC,extras,frPct,foPct,inadPct,ipcaPct,custPct,despGrowth,cotaCalcAtual,cotaNecProj,cotaRec,cota0,cota1,cota2,saldo0,saldo1,saldo2,cotaDest,diffUnid,pctNec,cotaProposta,pctProposta};
+}
+
+function renderComunicadoPreview(){
+  const preview=document.getElementById('comunicado-a4-preview');
+  if(!preview) return;
+  try{
+    const obsCheck=document.getElementById('com-show-obs')?.checked;
+    const obsField=document.getElementById('com-obs-field');
+    if(obsField) obsField.style.display=obsCheck?'block':'none';
+  const d=_comGetData();
+  const nome=document.getElementById('com-nome')?.value||'Condominio';
+  const compRaw=document.getElementById('com-competencia')?.value||'';
+  const assinatura=document.getElementById('com-assinatura')?.value||'';
+  const assData=document.getElementById('com-assembleia-data')?.value||'';
+  const assLocal=document.getElementById('com-assembleia-local')?.value||'';
+  const obsText=document.getElementById('com-obs-text')?.value||'';
+  const showDesp=document.getElementById('com-show-desp')?.checked;
+  const showCenarios=document.getElementById('com-show-cenarios')?.checked;
+  const showDestaq=document.getElementById('com-show-destaque')?.checked;
+  const showAss=document.getElementById('com-show-assembleia')?.checked;
+  const showObs=document.getElementById('com-show-obs')?.checked;
+  const showExtras=document.getElementById('com-show-extras')?.checked;
+  const showComposicao=document.getElementById('com-show-composicao')?.checked;
+  const showRetro=document.getElementById('com-show-retro')?.checked;
+  const showJustif=document.getElementById('com-show-justif')?.checked;
+  const meses=['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  let compStr='';if(compRaw){const[y,m]=compRaw.split('-');compStr=`${meses[parseInt(m)-1]||m} de ${y}`;}
+  let assDataStr='';if(assData){const[y,m,dd]=assData.split('-');assDataStr=`${dd}/${m}/${y}`;}
+  const despArr=(typeof despesas!=='undefined'&&Array.isArray(despesas))?despesas:[];
+  const _gdv=dd=>typeof getDespesaMensalValor==='function'?getDespesaMensalValor(dd):(parseFloat(dd.valor)||0);
+  const despSorted=[...despArr].sort((a,b)=>_gdv(b)-_gdv(a));
+  const maxDV=Math.max(...despSorted.map(_gdv),1);
+  let html=`<div class="ca4-hdr">
+    <div class="ca4-hdr-tag">Comunicado aos condôminos${compStr?' · '+compStr:''}</div>
+    <div class="ca4-condo">${nome}</div>
+    <div class="ca4-sub">Proposta de Reequilíbrio da Cota Condominial</div>
+  </div>`;
+  if(showDesp&&despSorted.length>0){
+    html+=`<div class="ca4-section">
+      <div class="ca4-section-hdr">
+        <div class="ca4-section-icon" style="background:#e8f0fe;">📊</div>
+        <div class="ca4-section-title">Composição das despesas mensais</div>
+      </div>`;
+    despSorted.forEach(dd=>{
+      const v=_gdv(dd);const w=Math.max(2,(v/maxDV*100)).toFixed(1);
+      html+=`<div class="ca4-desp-row">
+        <div class="ca4-desp-name">${dd.desc||'Despesa'}</div>
+        <div class="ca4-desp-bar-wrap"><div class="ca4-desp-bar-fill" style="width:${w}%"></div></div>
+        <div class="ca4-desp-val">${_ca4Fmt(v)}</div>
+      </div>`;
+    });
+    if(d.extras&&d.extras.total>0&&showExtras){
+      const ew=Math.max(2,(d.extras.total/maxDV*100)).toFixed(1);
+      html+=`<div class="ca4-desp-row">
+        <div class="ca4-desp-name" style="color:#a371f7;font-weight:600;">Novos custos simulados</div>
+        <div class="ca4-desp-bar-wrap"><div class="ca4-desp-bar-fill" style="width:${ew}%;background:#a371f7;"></div></div>
+        <div class="ca4-desp-val" style="color:#a371f7;">${_ca4Fmt(d.extras.total)}</div>
+      </div>`;
+    }
+    html+=`<div class="ca4-desp-total">
+      <span class="ca4-desp-total-l">${d.n} unidades · ${_ca4Fmt(d.totDesp)}/mês total</span>
+      <span class="ca4-desp-total-v">Cota necessária: ${_ca4Fmt(d.cotaCalcAtual)}/unidade</span>
+    </div></div>`;
+  }
+  // Composição da cota no preview
+  if(showComposicao&&d.cotaCalcAtual>0&&d.n>0){
+    const sub2=d.totDesp*(1+d.frPct/100+d.foPct/100);
+    const frVal2=d.totDesp*d.frPct/100;
+    const foVal2=d.totDesp*d.foPct/100;
+    const inadV2=d.inadPct<100?sub2*(d.inadPct/100)/(1-d.inadPct/100):0;
+    const total2=sub2+inadV2;
+    const items2=[
+      {label:'Despesas operacionais', val:d.totDesp/d.n, totalVal:d.totDesp,  pct:d.totDesp/total2*100,  color:'#2f81f7'},
+      {label:`Fundo de Reserva (${d.frPct.toFixed(1)}%)`,  val:frVal2/d.n,   totalVal:frVal2,  pct:frVal2/total2*100,   color:'#39c5cf'},
+      {label:`Fundo de Obras (${d.foPct.toFixed(1)}%)`,    val:foVal2/d.n,   totalVal:foVal2,  pct:foVal2/total2*100,   color:'#3fb950'},
+      {label:`Inadimplência (${d.inadPct.toFixed(1)}%)`,   val:inadV2/d.n,   totalVal:inadV2,  pct:inadV2/total2*100,   color:'#f85149'},
+    ].filter(it=>it.val>0.01);
+    const maxP=Math.max(...items2.map(i=>i.pct),1);
+    html+=`<div class="ca4-block"><div class="ca4-block-title">Composição da cota necessária — ${_ca4Fmt(d.cotaCalcAtual)}/unidade</div>
+      ${items2.map(it=>`<div style="display:grid;grid-template-columns:140px 1fr 36px 70px;gap:6px;align-items:center;margin-bottom:2mm;">
+        <div style="font-size:8.5pt;color:#333;display:flex;align-items:center;gap:2mm;">
+          <span style="width:6px;height:6px;border-radius:50%;background:${it.color};display:inline-block;flex-shrink:0;"></span>${it.label}
+        </div>
+        <div style="height:6px;background:#f0f0f0;border-radius:3px;overflow:hidden;">
+          <div style="height:100%;width:${Math.min(100,(it.pct/maxP*100)).toFixed(1)}%;background:${it.color};border-radius:3px;opacity:.85;"></div>
+        </div>
+        <div style="font-size:8pt;font-weight:700;color:#888;text-align:right;">${it.pct.toFixed(1)}%</div>
+        <div style="font-size:8.5pt;font-weight:700;color:${it.color};text-align:right;">${_ca4Fmt(it.val)}</div>
+      </div>`).join('')}
+      <div style="display:flex;justify-content:space-between;margin-top:2mm;padding-top:2mm;border-top:1.5px solid #e0e0e0;">
+        <div style="font-size:8.5pt;color:#555;">${d.n} unidades × ${_ca4Fmt(d.cotaCalcAtual)}</div>
+        <div style="font-size:9pt;font-weight:700;color:#388bfd;">Total: ${_ca4Fmt(total2)}/mês</div>
+      </div>
+    </div>`;
+  }
+
+  if(showCenarios){
+    const showRec=document.getElementById('com-show-rec')?.checked;
+    const col0=d.saldo0>=0?'#3fb950':'#f85149',col1=d.saldo1>=0?'#3fb950':'#f85149',col2=d.saldo2>=0?'#3fb950':'#f85149';
+    const gridCols=showRec?'1fr 1fr 1fr 1fr 1fr':'1fr 1fr 1fr 1fr';
+    html+=`<div class="ca4-section"><div class="ca4-section-hdr"><div class="ca4-section-icon" style="background:#fff3e0;">🔀</div><div class="ca4-section-title">Comparativo de cenários — próximo ano</div></div><div class="ca4-scenarios" style="grid-template-columns:${gridCols};"><div class="ca4-scen sem"><div class="ca4-scen-label sem">Sem reajuste</div><div class="ca4-scen-cota sem">${_ca4Fmt(d.cota0)}</div><div class="ca4-scen-saldo" style="color:${col0}">${d.saldo0>=0?'Superavit':'Deficit'} ${_ca4Fmt(Math.abs(d.saldo0))}/mes</div></div><div class="ca4-scen ipca"><div class="ca4-scen-label ipca">IPCA ${d.ipcaPct.toFixed(1)}%</div><div class="ca4-scen-cota ipca">${_ca4Fmt(d.cota1)}</div><div class="ca4-scen-saldo" style="color:${col1}">${d.saldo1>=0?'Superavit':'Deficit'} ${_ca4Fmt(Math.abs(d.saldo1))}/mes</div></div><div class="ca4-scen prop"><div class="ca4-scen-label prop">Proposta ${d.custPct.toFixed(1)}%</div><div class="ca4-scen-cota prop">${_ca4Fmt(d.cota2)}</div><div class="ca4-scen-saldo" style="color:${col2}">${d.saldo2>=0?'Superavit':'Deficit'} ${_ca4Fmt(Math.abs(d.saldo2))}/mes</div></div><div class="ca4-scen nec"><div class="ca4-scen-label" style="color:#388bfd;">Equil. projetado</div><div class="ca4-scen-cota" style="color:#388bfd;">${_ca4Fmt(d.cotaNecProj)}</div><div class="ca4-scen-saldo" style="color:#666;">Ano 1 · +${d.despGrowth.toFixed(1)}% desp.</div></div>${showRec?`<div class="ca4-scen rec"><div class="ca4-scen-label" style="color:#1a9aaa;">Recomendada</div><div class="ca4-scen-cota" style="color:#1a9aaa;">${_ca4Fmt(d.cotaRec)}</div><div class="ca4-scen-saldo" style="color:#666;">FR 10·FO 10·Inad 10%</div></div>`:''}</div></div>`;
+  }
+  if(showDestaq&&d.cotaAtual>0&&d.cotaCalcAtual>0){
+    const isOver=d.diffUnid>0;
+    const sign=isOver?'+':'';
+    html+=`<div class="ca4-destaque">
+      <div style="display:flex;align-items:baseline;gap:3mm;flex-wrap:wrap;">
+        <div class="ca4-destaque-num" style="color:${isOver?'#f85149':'#3fb950'}">${sign}${_ca4Fmt(d.diffUnid)}<span style="font-size:11pt;font-weight:400;color:#555;"> / unidade / mês</span></div>
+      </div>
+      <div class="ca4-destaque-label">
+        Cota <strong>necessária para equilíbrio: ${_ca4Fmt(d.cotaCalcAtual)}</strong> — reajuste de <strong>${d.pctNec.toFixed(1)}%</strong> sobre a cota vigente (${_ca4Fmt(d.cotaAtual)})
+        ${d.diffUnid>0
+          ? `<br><span style="color:#f85149">▲ Sem esse reajuste o condomínio opera em deficit.</span>`
+          : `<br><span style="color:#3fb950">✓ A cota atual já cobre as despesas.</span>`}
+      </div>
+    </div>`;
+  }
+  if(showAss){html+=`<div class="ca4-assembleia"><div class="ca4-assembleia-icon">📅</div><div class="ca4-assembleia-body"><div class="ca4-assembleia-title">Assembleia Geral Ordinária</div><div class="ca4-assembleia-info">${assDataStr?'Data: '+assDataStr+'&nbsp;&nbsp;&nbsp;':'Data a confirmar&nbsp;&nbsp;&nbsp;'}${assLocal?'Local: '+assLocal:''}<br>Sua presença é fundamental para a tomada de decisão.</div></div></div>`;}
+  if(showObs&&obsText){html+=`<div class="ca4-obs"><strong>Nota do sindico:</strong> ${obsText}</div>`;}
+
+  // Bloco retroativo no preview
+  if(showRetro){
+    const tipoR=document.getElementById('retro-indice')?.value||'ipca';
+    const _ri={ipca:{2022:5.79,2023:4.62,2024:4.83,2025:5.10},igpm:{2022:5.45,2023:-3.18,2024:6.54,2025:6.80},inpc:{2022:5.93,2023:3.71,2024:5.10,2025:5.50}};
+    const hist2=(typeof historico!=='undefined'&&Array.isArray(historico))?historico:[];
+    const ANO_R=new Date().getFullYear();
+    if(hist2.length>0&&d.cotaAtual>0){
+      const anos2=[...hist2.map(h=>({ano:h.ano,cotaReal:h.cota,despM:h.despesas/12})),{ano:ANO_R,cotaReal:d.cotaAtual,despM:d.totDesp}];
+      let cReaj=anos2[0].cotaReal;
+      const rows2=anos2.map((item,idx)=>{
+        if(idx>0){const pct=window._retroCustom?.[anos2[idx-1].ano]??(_ri[tipoR]?.[anos2[idx-1].ano]??0);cReaj*=(1+pct/100);}
+        const nec=d.n>0?item.despM*(1+d.frPct/100+d.foPct/100)/(d.n*(1-d.inadPct/100)):0;
+        return{ano:item.ano,cotaReal:item.cotaReal,cReaj,nec,isAtual:item.ano===ANO_R};
+      });
+      const nomeIndice={ipca:'IPCA',igpm:'IGP-M',inpc:'INPC',custom:'Personalizado'}[tipoR]||tipoR.toUpperCase();
+      html+=`<div class="ca4-block"><div class="ca4-block-title">Se tivesse sido reajustado pelo ${nomeIndice}</div>
+        <table style="width:100%;border-collapse:collapse;font-size:8.5pt;">
+          <thead><tr style="border-bottom:1px solid #e0e0e0;">
+            <th style="text-align:left;padding:1.5mm 2mm;color:#888;font-weight:600;">Ano</th>
+            <th style="text-align:right;padding:1.5mm 2mm;color:#888;font-weight:600;">Cota real</th>
+            <th style="text-align:right;padding:1.5mm 2mm;color:#39c5cf;font-weight:600;">Se reajustada</th>
+            <th style="text-align:right;padding:1.5mm 2mm;color:#388bfd;font-weight:600;">Necessária</th>
+            <th style="text-align:right;padding:1.5mm 2mm;color:#888;font-weight:600;">Gap</th>
+          </tr></thead>
+          <tbody>${rows2.map(r=>{
+            const gap=r.cReaj-r.nec;
+            const gapCol=gap>=0?'#3fb950':'#f85149';
+            const rowStyle=r.isAtual?'background:#f0f6ff;font-weight:700;':'';
+            return`<tr style="${rowStyle}border-bottom:1px solid #f0f0f0;">
+              <td style="padding:1.5mm 2mm;">${r.ano}${r.isAtual?' ★':''}</td>
+              <td style="text-align:right;padding:1.5mm 2mm;color:#555;">${_ca4Fmt(r.cotaReal)}</td>
+              <td style="text-align:right;padding:1.5mm 2mm;color:#39c5cf;font-weight:600;">${_ca4Fmt(r.cReaj)}</td>
+              <td style="text-align:right;padding:1.5mm 2mm;color:#388bfd;font-weight:600;">${r.nec>0?_ca4Fmt(r.nec):'—'}</td>
+              <td style="text-align:right;padding:1.5mm 2mm;color:${gapCol};font-weight:600;">${r.nec>0?(gap>=0?'+':'')+_ca4Fmt(gap):'—'}</td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table>
+        <div style="margin-top:2mm;font-size:8pt;color:#888;">★ Ano atual &nbsp;·&nbsp; Reajustada = cota composta pelo ${nomeIndice} a cada ano &nbsp;·&nbsp; Gap = reajustada vs necessária</div>
+      </div>`;
+    }
+  }
+
+  // Justificativa dos índices no preview
+  if(showJustif&&d.cotaCalcAtual>0){
+    // Calcular cota com índices recomendados: FR 10%, FO 10%, inad 10%
+    const frRec=10, foRec=10, inadRec=10;
+    const nPagRef=d.nPagC||d.n;
+    function cotaComIndices(fr,fo,inad){
+      if(!nPagRef||nPagRef<=0)return 0;
+      const sub=d.totDesp*(1+fr/100+fo/100);
+      return sub/(nPagRef*(inad<100?1-inad/100:1));
+    }
+    const cotaAdotada=d.cotaCalcAtual;
+    const cotaRec=cotaComIndices(frRec,foRec,inadRec);
+    const diffJustif=cotaRec-cotaAdotada;
+
+    html+=`<div class="ca4-block" style="page-break-before:auto;">
+      <div class="ca4-block-title" style="color:#d29922;border-color:#e8d5a0;">Por que esses percentuais foram escolhidos?</div>
+      <p style="font-size:8.5pt;color:#333;line-height:1.65;margin-bottom:3mm;">A definição dos percentuais de Fundo de Reserva, Fundo de Obras e Inadimplência não é arbitrária — ela reflete uma escolha consciente entre o que seria tecnicamente ideal e o que é financeiramente responsável para os condôminos neste momento.</p>
+
+      <div style="background:#fff8f0;border-left:3px solid #39c5cf;padding:3mm 4mm;border-radius:1mm 3mm 3mm 1mm;margin-bottom:3mm;">
+        <div style="font-size:8pt;font-weight:700;color:#39c5cf;margin-bottom:1.5mm;">FUNDO DE RESERVA — adotado ${d.frPct.toFixed(0)}% &nbsp;|&nbsp; recomendado para nossa realidade: ${frRec}%</div>
+        <p style="font-size:8pt;color:#444;line-height:1.6;margin:0;">A NBR 5674 recomenda entre 5% e 10% das despesas mensais para o Fundo de Reserva. Para edificações com mais de 20 anos, o teto de 10% é o mais prudente — e nosso condomínio possui 44 anos de uso. Nessa faixa etária, sistemas hidráulicos, elétricos e estruturais estão na segunda metade de sua vida útil, tornando falhas e intervenções emergenciais estatisticamente mais frequentes e mais custosas. Adotamos ${d.frPct.toFixed(0)}% como ponto de partida responsável, mas alertamos: esse percentual pode ser insuficiente diante de uma emergência de maior porte.</p>
+      </div>
+
+      <div style="background:#fff8f0;border-left:3px solid #3fb950;padding:3mm 4mm;border-radius:1mm 3mm 3mm 1mm;margin-bottom:3mm;">
+        <div style="font-size:8pt;font-weight:700;color:#3fb950;margin-bottom:1.5mm;">FUNDO DE OBRAS — adotado ${d.foPct.toFixed(0)}% &nbsp;|&nbsp; recomendado para nossa realidade: ${foRec}%</div>
+        <p style="font-size:8pt;color:#444;line-height:1.6;margin:0;">Sem zeladoria permanente, problemas estruturais e de infraestrutura tendem a ser identificados tardiamente — quando já evoluíram de um reparo simples para uma intervenção cara. Fachadas, impermeabilizações, estrutura de concreto e instalações envelhecem silenciosamente. O percentual de ${d.foPct.toFixed(0)}% foi adotado para não onerar o morador neste primeiro momento, mas o ideal para um prédio com nosso perfil seria ${foRec}%. A diferença entre esses dois valores, acumulada ao longo de 12 meses, representa a reserva que evitaria um rateio extraordinário no futuro.</p>
+      </div>
+
+      <div style="background:#fff8f0;border-left:3px solid #f85149;padding:3mm 4mm;border-radius:1mm 3mm 3mm 1mm;margin-bottom:3mm;">
+        <div style="font-size:8pt;font-weight:700;color:#f85149;margin-bottom:1.5mm;">INADIMPLÊNCIA — adotado ${d.inadPct.toFixed(0)}%</div>
+        <p style="font-size:8pt;color:#444;line-height:1.6;margin:0;">O percentual de inadimplência é o único entre os três que reflete diretamente a realidade dos pagamentos dentro do condomínio. Ele não é uma escolha — é uma proteção. Sem essa reserva, o não pagamento de um condômino seria imediatamente absorvido pelos demais. Os ${d.inadPct.toFixed(0)}% adotados estão dentro da faixa de mercado para condomínios residenciais no Brasil e permanecem os mesmos em ambos os cenários.</p>
+      </div>
+
+      <div style="background:#f0f6ff;border:1.5px solid #388bfd;border-radius:2mm;padding:3mm 4mm;margin-bottom:0;">
+        <div style="font-size:8pt;font-weight:700;color:#388bfd;margin-bottom:2mm;">O QUE ISSO SIGNIFICA NA PRÁTICA?</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4mm;margin-bottom:2mm;">
+          <div style="text-align:center;background:#fff;border-radius:1.5mm;padding:2mm;">
+            <div style="font-size:7.5pt;color:#888;margin-bottom:1mm;">Cenário adotado (FR ${d.frPct.toFixed(0)}% + FO ${d.foPct.toFixed(0)}%)</div>
+            <div style="font-size:14pt;font-weight:700;color:#388bfd;">${_ca4Fmt(cotaAdotada)}</div>
+            <div style="font-size:7pt;color:#888;">por unidade / mês</div>
+          </div>
+          <div style="text-align:center;background:#fff;border-radius:1.5mm;padding:2mm;">
+            <div style="font-size:7.5pt;color:#888;margin-bottom:1mm;">Cenário recomendado (FR ${frRec}% + FO ${foRec}%)</div>
+            <div style="font-size:14pt;font-weight:700;color:#d29922;">${_ca4Fmt(cotaRec)}</div>
+            <div style="font-size:7pt;color:#888;">por unidade / mês</div>
+          </div>
+        </div>
+        <p style="font-size:8pt;color:#444;line-height:1.6;margin:0;">A diferença de <strong style="color:#f85149;">${_ca4Fmt(diffJustif)}/unidade/mês</strong> representa a escolha que estamos fazendo hoje: pagar menos agora, com o risco de pagar mais — e de forma emergencial — amanhã. A administração optou pelo cenário mais favorável ao condômino, mas entende ser sua obrigação apresentar esse panorama com total transparência.</p>
+      </div>
+    </div>`;
+  }
+
+  html+=`<div class="ca4-footer"><span class="ca4-footer-l">Calculado com base nas despesas operacionais${compStr?' · '+compStr:''}.</span><span class="ca4-footer-r">${assinatura||'Administração'}</span></div>`;
+  preview.innerHTML=html;
+  }catch(err){
+    console.error('Preview comunicado erro:',err);
+    preview.innerHTML=`<div style="padding:20px;color:#f85149;font-size:12px;">
+      <strong>Erro ao gerar preview:</strong> ${err.message}<br>
+      <span style="color:#888;font-size:11px;">O PDF pode ainda ser gerado normalmente.</span>
+    </div>`;
+  }
+}
+
+function gerarComunicadoPdf(){
+  if(!window.jspdf){if(typeof showToast==='function')showToast('jsPDF nao carregado.','error',3000);return;}
+  try{
+    const{jsPDF}=window.jspdf;
+    const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    const W=210,pad=14,cW=W-2*pad;let y=0;
+
+    const d=_comGetData();
+    const nome=document.getElementById('com-nome')?.value||'Condominio';
+    const compRaw=document.getElementById('com-competencia')?.value||'';
+    const assinatura=document.getElementById('com-assinatura')?.value||'Administracao';
+    const meses=['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    let compStr='';if(compRaw){const[yr,mo]=compRaw.split('-');compStr=(meses[parseInt(mo)-1]||mo)+' de '+yr;}
+    const assData=document.getElementById('com-assembleia-data')?.value||'';
+    const assLocal=document.getElementById('com-assembleia-local')?.value||'';
+    const obsText=document.getElementById('com-obs-text')?.value||'';
+    let assDataStr='';if(assData){const[yr,mo,dd]=assData.split('-');assDataStr=dd+'/'+mo+'/'+yr;}
+    const showDesp=!!document.getElementById('com-show-desp')?.checked;
+    const showCenarios=!!document.getElementById('com-show-cenarios')?.checked;
+    const showDestaq=!!document.getElementById('com-show-destaque')?.checked;
+    const showAss=!!document.getElementById('com-show-assembleia')?.checked;
+    const showObs=!!document.getElementById('com-show-obs')?.checked&&!!obsText;
+    const showExtras=!!document.getElementById('com-show-extras')?.checked;
+    const showComposicao=!!document.getElementById('com-show-composicao')?.checked;
+    const showRetro=!!document.getElementById('com-show-retro')?.checked;
+    const showJustif=!!document.getElementById('com-show-justif')?.checked;
+
+    const BLUE='#2f81f7',TEAL='#39c5cf',GREEN='#27943a',RED='#e05555',AMBER='#c49020';
+    const DARK='#1a1a2e',GRAY='#888888',LIGHT='#f5f7fb',BORDER='#e8eaf0';
+    const f=v=>{try{return _ca4Fmt(v);}catch(e){return '--';}};
+
+    const np=()=>{doc.addPage();y=0;};
+    const chk=(n)=>{if(y+n>272)np();};
+
+    // T simples — sem splitTextToSize para valores, so para paragrafos longos
+    const T=(t,x,yy,sz,col,st,al)=>{
+      doc.setFontSize(sz);doc.setTextColor(col||DARK);
+      doc.setFont('helvetica',st||'normal');
+      doc.text(String(t==null?'':t),x,yy,{align:al||'left'});
+    };
+    // Tw com wrap — so para textos longos (paragrafos)
+    const Tw=(t,x,yy,sz,col,maxW)=>{
+      doc.setFontSize(sz);doc.setTextColor(col||DARK);doc.setFont('helvetica','normal');
+      const lines=doc.splitTextToSize(String(t),maxW||cW);
+      doc.text(lines,x,yy);
+      return lines.length;
+    };
+    const L=(x1,y1,x2,y2,col,w)=>{doc.setDrawColor(col||BORDER);doc.setLineWidth(w||0.2);doc.line(x1,y1,x2,y2);};
+    const RECT=(x,yy,w,h,fill,stroke,r)=>{
+      if(fill)doc.setFillColor(fill);
+      if(stroke){doc.setDrawColor(stroke);doc.setLineWidth(0.4);}
+      r?doc.roundedRect(x,yy,w,h,r,r,fill&&stroke?'FD':fill?'F':'D'):doc.rect(x,yy,w,h,fill&&stroke?'FD':fill?'F':'D');
+    };
+    // Secao com linha — sem emoji, so texto
+    const SEC=(label)=>{
+      chk(10);
+      doc.setFillColor('#e8f0fe');doc.rect(pad,y,3,4,'F');
+      doc.setFillColor(BLUE);doc.rect(pad,y,3,1,'F');
+      T(label,pad+6,y+3.2,7.5,GRAY,'bold');
+      y+=4;L(pad,y,W-pad,y,BORDER,0.4);y+=3;
+    };
+
+    // ── CABECALHO ─────────────────────────────────────────────────────────
+    doc.setFillColor(DARK);doc.rect(0,0,W,28,'F');
+    doc.setFillColor(BLUE);doc.rect(0,27,W/2,1.2,'F');
+    doc.setFillColor(TEAL);doc.rect(W/2,27,W/2,1.2,'F');
+    T(('Comunicado aos condominios'+(compStr?' - '+compStr:'')).toUpperCase(),pad,8,6.5,'#7fa8e8','bold');
+    T(nome,pad,17,15,'#ffffff','bold');
+    T('Proposta de Reequilibrio da Cota Condominial',pad,23,8.5,'#8baad8','normal');
+    y=35;
+
+    // ── DESPESAS ──────────────────────────────────────────────────────────
+    if(showDesp){
+      const despArr=(typeof despesas!=='undefined'&&Array.isArray(despesas))?despesas:[];
+      if(despArr.length>0){
+        SEC('COMPOSICAO DAS DESPESAS MENSAIS');
+        const gv=dd=>typeof getDespesaMensalValor==='function'?getDespesaMensalValor(dd):(parseFloat(dd.valor)||0);
+        const sorted=[...despArr].sort((a,b)=>gv(b)-gv(a));
+        const maxV=Math.max(...sorted.map(gv),1);
+        const valX=W-pad, nameW=50, barStart=pad+nameW+2, barW=cW-nameW-30;
+        sorted.forEach(dd=>{
+          chk(5.5);
+          const v=gv(dd);const bw=Math.max(1,(v/maxV)*barW);
+          T(String(dd.desc||'Despesa'),pad,y,8,DARK,'normal');
+          RECT(barStart,y-3.2,barW,3.5,'#eef0f5',null);
+          doc.setFillColor(BLUE);doc.rect(barStart,y-3.2,bw,3.5,'F');
+          T(f(v),valX,y,8,DARK,'bold','right');
+          y+=5;
+        });
+        if(d.extras&&d.extras.total>0&&showExtras){
+          chk(5.5);
+          const bw=Math.max(1,(d.extras.total/maxV)*barW);
+          T('Novos custos simulados',pad,y,8,'#a371f7','bold');
+          RECT(barStart,y-3.2,barW,3.5,'#f3e8ff',null);
+          doc.setFillColor('#a371f7');doc.rect(barStart,y-3.2,bw,3.5,'F');
+          T(f(d.extras.total),valX,y,8,'#a371f7','bold','right');y+=5;
+        }
+        chk(7);L(pad,y,W-pad,y,BORDER,0.4);y+=1;
+        T(d.n+' unidades  |  '+f(d.totDesp)+'/mes',pad,y+4,7.5,GRAY,'normal');
+        T('Cota necessaria: '+f(d.cotaCalcAtual)+'/unidade',W-pad,y+4,8,DARK,'bold','right');
+        y+=9;
+      }
+    }
+
+    // ── COMPOSICAO DA COTA ────────────────────────────────────────────────
+    if(showComposicao&&d.cotaCalcAtual>0&&d.n>0){
+      SEC('COMPOSICAO DA COTA NECESSARIA - '+f(d.cotaCalcAtual)+'/UNIDADE');
+      const sub2=d.totDesp*(1+d.frPct/100+d.foPct/100);
+      const frV=d.totDesp*d.frPct/100,foV=d.totDesp*d.foPct/100;
+      const inadV2=d.inadPct<100?sub2*(d.inadPct/100)/(1-d.inadPct/100):0;
+      const tot2=sub2+inadV2;
+      const its=[
+        {l:'Despesas operacionais',v:d.totDesp/d.n,p:d.totDesp/tot2*100,c:BLUE},
+        {l:'Fundo de Reserva ('+d.frPct.toFixed(0)+'%)',v:frV/d.n,p:frV/tot2*100,c:TEAL},
+        {l:'Fundo de Obras ('+d.foPct.toFixed(0)+'%)',v:foV/d.n,p:foV/tot2*100,c:GREEN},
+        {l:'Inadimplencia ('+d.inadPct.toFixed(0)+'%)',v:inadV2/d.n,p:inadV2/tot2*100,c:RED},
+      ].filter(it=>it.v>0.01);
+      const maxP=Math.max(...its.map(i=>i.p),1);
+      const bS=pad+48,bW2=cW-75;
+      its.forEach(it=>{
+        chk(6);
+        doc.setFillColor(it.c);doc.rect(pad,y-2.5,2.5,2.5,'F');
+        T(it.l,pad+5,y,8,DARK,'normal');
+        RECT(bS,y-3.2,bW2,3.5,'#eef0f5',null);
+        doc.setFillColor(it.c);doc.rect(bS,y-3.2,Math.max(1,(it.p/maxP)*bW2),3.5,'F');
+        T(it.p.toFixed(1)+'%',bS+bW2+3,y,7.5,GRAY,'bold');
+        T(f(it.v),W-pad,y,8,it.c,'bold','right');
+        y+=5.5;
+      });
+      chk(6);L(pad,y,W-pad,y,BORDER,0.4);y+=1;
+      T(d.n+' unidades x '+f(d.cotaCalcAtual),pad,y+4,7.5,GRAY);
+      T('Total necessario: '+f(tot2)+'/mes',W-pad,y+4,8,BLUE,'bold','right');y+=10;
+    }
+
+    // ── CENARIOS ──────────────────────────────────────────────────────────
+    if(showCenarios){
+      const showRec=!!document.getElementById('com-show-rec')?.checked;
+      const nCards=showRec?5:4;
+      chk(34);SEC('COMPARATIVO DE CENARIOS — PROXIMO ANO');
+      const scW=(cW-(nCards-1)*3)/nCards;
+      const cards=[
+        {col:RED,  bg:'#fff5f5',bc:'#fcc',    lbl:'SEM REAJUSTE',                        cota:d.cota0,       saldo:d.saldo0},
+        {col:AMBER,bg:'#fffbf0',bc:'#f0d9a0', lbl:'IPCA '+(d.ipcaPct||0).toFixed(1)+'%',cota:d.cota1,       saldo:d.saldo1},
+        {col:GREEN,bg:'#f2fff5',bc:'#a8ddb8', lbl:'PROPOSTA '+(d.custPct||0).toFixed(1)+'%',cota:d.cota2,   saldo:d.saldo2},
+        {col:BLUE, bg:'#f0f6ff',bc:'#b8d0f8', lbl:'EQUIL. PROJETADO (+'+d.despGrowth.toFixed(1)+'%)',cota:d.cotaNecProj,saldo:null},
+        ...(showRec?[{col:'#1a9aaa',bg:'#f0fbfc',bc:'#a0dde0',lbl:'RECOMENDADA',cota:d.cotaRec,saldo:null}]:[]),
+      ];
+      cards.forEach(({col,bg,bc,lbl,cota,saldo},i)=>{
+        const cx=pad+i*(scW+3);
+        RECT(cx,y,scW,23,bg,bc,1.5);
+        T(lbl,cx+scW/2,y+5.5,5.5,col,'bold','center');
+        T(f(cota),cx+scW/2,y+13,10,col,'bold','center');
+        const sl=saldo===null?(lbl.includes('EQUIL')?'Ano 1 c/ crescimento':'FR 10·FO 10·Inad 10%'):(saldo===0?'Equilibrio':(saldo>0?'Superavit ':'Deficit ')+f(Math.abs(saldo)));
+        T(sl,cx+scW/2,y+20,6.5,saldo===null?'#888':saldo===0?BLUE:saldo>0?GREEN:RED,'normal','center');
+      });
+      y+=28;
+    }
+
+    // ── DESTAQUE ──────────────────────────────────────────────────────────
+    if(showDestaq&&d.cotaAtual>0&&d.cotaCalcAtual>0){
+      chk(20);
+      const isOver=d.diffUnid>0;const dcol=isOver?RED:GREEN;
+      RECT(pad,y,cW,17,isOver?'#fff5f5':'#f2fff5',dcol,2);
+      doc.setDrawColor(dcol);doc.setLineWidth(1.5);doc.line(pad,y,pad,y+17);
+      const sign=isOver?'+':'';
+      T(sign+f(d.diffUnid)+' / unidade / mes',pad+5,y+8,13,dcol,'bold');
+      T('Cota necessaria: '+f(d.cotaCalcAtual)+' | Reajuste de '+(d.pctNec||0).toFixed(1)+'% sobre '+f(d.cotaAtual)+' vigente',pad+5,y+14,8,'#444','normal');
+      y+=22;
+    }
+
+    // ── ASSEMBLEIA ────────────────────────────────────────────────────────
+    if(showAss){
+      chk(16);RECT(pad,y,cW,14,LIGHT,BORDER,1.5);
+      T('ASSEMBLEIA GERAL ORDINARIA',pad+5,y+5.5,9,DARK,'bold');
+      T((assDataStr?'Data: '+assDataStr+'   ':'Data a confirmar   ')+(assLocal?'Local: '+assLocal:''),pad+5,y+11,8,GRAY);
+      y+=19;
+    }
+
+    // ── OBSERVACAO ────────────────────────────────────────────────────────
+    if(showObs&&obsText){
+      chk(14);
+      doc.setFillColor('#fffbf0');doc.rect(pad,y,cW,12,'F');
+      doc.setFillColor(AMBER);doc.rect(pad,y,1.5,12,'F');
+      T('Nota: '+obsText.slice(0,110),pad+4,y+7,8,'#555','normal');y+=16;
+    }
+
+    // ── RETROATIVO ────────────────────────────────────────────────────────
+    if(showRetro){
+      const tipoR=document.getElementById('retro-indice')?.value||'ipca';
+      const _ri={ipca:{2022:5.79,2023:4.62,2024:4.83,2025:5.10},igpm:{2022:5.45,2023:-3.18,2024:6.54,2025:6.80},inpc:{2022:5.93,2023:3.71,2024:5.10,2025:5.50}};
+      const hist2=(typeof historico!=='undefined'&&Array.isArray(historico))?historico:[];
+      const ANO_R=new Date().getFullYear();
+      if(hist2.length>0&&d.cotaAtual>0){
+        chk(30);
+        const nomeI={ipca:'IPCA',igpm:'IGP-M',inpc:'INPC',custom:'Personalizado'}[tipoR]||tipoR.toUpperCase();
+        SEC('SE TIVESSE SIDO REAJUSTADO PELO '+nomeI);
+        const anos2=[...hist2.map(h=>({ano:h.ano,cotaReal:h.cota,despM:h.despesas/12})),{ano:ANO_R,cotaReal:d.cotaAtual,despM:d.totDesp}];
+        let cReaj=anos2[0].cotaReal;
+        const rows2=anos2.map((item,idx)=>{
+          if(idx>0){const pct=window._retroCustom?.[anos2[idx-1].ano]??(_ri[tipoR]?.[anos2[idx-1].ano]??0);cReaj*=(1+pct/100);}
+          const nec=d.n>0?item.despM*(1+d.frPct/100+d.foPct/100)/(d.n*(1-d.inadPct/100)):0;
+          return{ano:item.ano,cotaReal:item.cotaReal,cReaj,nec,isAtual:item.ano===ANO_R};
+        });
+        const cx=[pad,pad+22,pad+52,pad+82,pad+112];
+        ['Ano','Cota real','Reajustada','Necessaria','Gap'].forEach((h,i)=>T(h,cx[i],y,7,GRAY,'bold'));
+        y+=1;L(pad,y,W-pad,y,BORDER,0.3);y+=3.5;
+        rows2.forEach(r=>{
+          chk(6);
+          if(r.isAtual){doc.setFillColor('#f0f6ff');doc.rect(pad-1,y-3.5,cW+2,5.5,'F');}
+          const gap=r.cReaj-r.nec;
+          T(r.ano+(r.isAtual?' *':''),cx[0],y,8,r.isAtual?BLUE:DARK,r.isAtual?'bold':'normal');
+          T(f(r.cotaReal),cx[1],y,8,GRAY);
+          T(f(r.cReaj),cx[2],y,8,TEAL,'bold');
+          T(r.nec>0?f(r.nec):'--',cx[3],y,8,BLUE,'bold');
+          T(r.nec>0?(gap>=0?'+':'')+f(gap):'--',cx[4],y,8,gap>=0?GREEN:RED,'bold');
+          L(pad,y+1.5,W-pad,y+1.5,'#f0f0f0',0.15);y+=5.5;
+        });
+        T('* Ano atual  |  Gap = Reajustada vs Necessaria',pad,y+2,6.5,GRAY);y+=8;
+      }
+    }
+
+    // ── JUSTIFICATIVA ─────────────────────────────────────────────────────
+    if(showJustif&&d.cotaCalcAtual>0){
+      chk(20);
+      if(y>20) y+=4;
+      const frR=10,foR=10,inadR=10;
+      const nPagR=d.nPagC||d.n;
+      const cotaR2=nPagR>0?d.totDesp*(1+frR/100+foR/100)/(nPagR*(1-inadR/100)):0;
+      const diffJ=cotaR2-d.cotaCalcAtual;
+
+      // Título
+      RECT(pad-1,y-4,cW+2,10,'#fffbf0',AMBER,1);
+      T('Por que esses percentuais foram escolhidos?',pad+3,y+2,9,AMBER,'bold');y+=13;
+
+      // Intro
+      const introL=doc.splitTextToSize('A definicao dos percentuais de Fundo de Reserva, Fundo de Obras e Inadimplencia nao e arbitraria - ela reflete uma escolha consciente entre o que seria tecnicamente ideal e o que e financeiramente responsavel para os condominios neste momento.',cW);
+      chk(introL.length*4+5);
+      doc.setFontSize(8);doc.setTextColor('#333');doc.setFont('helvetica','normal');
+      doc.text(introL,pad,y);y+=introL.length*4+5;
+
+      // 3 blocos
+      [[TEAL,'#f0fcfc','Fundo de Reserva - adotado '+d.frPct.toFixed(0)+'%  |  recomendado: '+frR+'%',
+        'A NBR 5674 recomenda entre 5% e 10% das despesas mensais. Para edificacoes com mais de 20 anos, o teto de 10% e o mais prudente - e nosso condominio possui 44 anos de uso. Sistemas hidraulicos, eletricos e estruturais estao na segunda metade de sua vida util, tornando falhas mais frequentes. Adotamos '+d.frPct.toFixed(0)+'% como ponto responsavel, mas alertamos: pode ser insuficiente diante de emergencias de maior porte.'],
+       [GREEN,'#f0fff4','Fundo de Obras - adotado '+d.foPct.toFixed(0)+'%  |  recomendado: '+foR+'%',
+        'Sem zeladoria permanente, problemas estruturais tendem a ser identificados tardiamente. Fachadas, impermeabilizacoes e instalacoes envelhecem silenciosamente. O percentual de '+d.foPct.toFixed(0)+'% foi adotado para nao onerar agora, mas o ideal para nosso perfil seria '+foR+'%. Essa diferenca acumulada em 12 meses evitaria um rateio extraordinario no futuro.'],
+       [RED,'#fff5f5','Inadimplencia - adotado '+d.inadPct.toFixed(0)+'% (mantido em ambos os cenarios)',
+        'O percentual de inadimplencia nao e uma escolha - e uma protecao. Sem essa reserva, o nao pagamento de um condomino seria absorvido pelos demais. Os '+d.inadPct.toFixed(0)+'% adotados estao dentro da faixa de mercado para condominios residenciais no Brasil.'],
+      ].forEach(([col,bg,tit,corpo])=>{
+        const cL=doc.splitTextToSize(corpo,cW-8);
+        const hB=cL.length*4+14;
+        chk(hB+4);
+        doc.setFillColor(bg);doc.rect(pad,y-3,cW,hB,'F');
+        doc.setFillColor(col);doc.rect(pad,y-3,1.5,hB,'F');
+        T(tit,pad+4,y+2,8,col,'bold');y+=6;
+        doc.setFontSize(7.5);doc.setTextColor('#444444');doc.setFont('helvetica','normal');
+        doc.text(cL,pad+4,y);y+=cL.length*4+6;
+      });
+
+      // Comparativo — calcular altura real do box antes de desenhar
+      const concTxt='A diferenca de '+f(diffJ)+'/unidade/mes representa a escolha que estamos fazendo hoje: pagar menos agora, com o risco de pagar mais - e de forma emergencial - amanha. A administracao optou pelo cenario mais favoravel ao condomino, mas entende ser sua obrigacao apresentar esse panorama com total transparencia.';
+      const cL2=doc.splitTextToSize(concTxt,cW-10);
+      const boxH=9+20+cL2.length*3.8+8; // titulo + cards + texto + padding
+      chk(boxH+4);
+      RECT(pad,y-2,cW,boxH,'#f0f6ff',BLUE,2);
+      T('O que isso significa na pratica?',pad+4,y+3,8,BLUE,'bold');y+=9;
+      const hC=(cW-8)/2;
+      RECT(pad+1,y,hC,18,'#fff',BLUE,1.5);
+      T('Cenario adotado (FR '+d.frPct.toFixed(0)+'% + FO '+d.foPct.toFixed(0)+'%)',pad+1+hC/2,y+4,7,GRAY,'normal','center');
+      T(f(d.cotaCalcAtual),pad+1+hC/2,y+12,13,BLUE,'bold','center');
+      T('por unidade / mes',pad+1+hC/2,y+17,6.5,GRAY,'normal','center');
+      RECT(pad+hC+7,y,hC,18,'#fff',AMBER,1.5);
+      T('Cenario recomendado (FR '+frR+'% + FO '+foR+'%)',pad+hC+7+hC/2,y+4,7,GRAY,'normal','center');
+      T(f(cotaR2),pad+hC+7+hC/2,y+12,13,AMBER,'bold','center');
+      T('por unidade / mes',pad+hC+7+hC/2,y+17,6.5,GRAY,'normal','center');
+      y+=22;
+      doc.setFontSize(7.5);doc.setTextColor('#444');doc.setFont('helvetica','normal');
+      doc.text(cL2,pad+4,y);
+      y+=cL2.length*3.8+6;
+    }
+
+    // ── FOOTERS ────────────────────────────────────────────────────────────
+    const total=doc.getNumberOfPages();
+    for(let p=1;p<=total;p++){
+      doc.setPage(p);
+      L(pad,284,W-pad,284,BORDER,0.3);
+      doc.setFontSize(7);doc.setTextColor(GRAY);doc.setFont('helvetica','normal');
+      doc.text('Calculado com base nas despesas operacionais'+(compStr?' - '+compStr:'')+'.',pad,288);
+      doc.text(assinatura,W-pad,288,{align:'right'});
+    }
+
+    doc.save('comunicado-reajuste-'+nome.replace(/\s+/g,'_')+'.pdf');
+    if(typeof showToast==='function')showToast('PDF gerado!','success',2500);
+
+  }catch(e){
+    console.error('PDF erro:',e);
+    if(typeof showToast==='function')showToast('Erro: '+e.message,'error',4000);
+  }
+}
+// ── FIM SIMULACOES JS ──
+
 function updateBNav(page){
   document.querySelectorAll('.bnav-item').forEach(b=>b.classList.remove('active'));
   const el=document.getElementById('bnav-'+page);
@@ -3495,9 +5025,9 @@ function renderHistorico(){
     const r=document.createElement('div');
     r.style.cssText='display:grid;grid-template-columns:52px 1fr 90px 70px;gap:5px;align-items:center;margin-bottom:6px';
     r.innerHTML=`<span style="font-size:12px;font-weight:500;color:var(--text2)">${h.ano}</span>
-      <input type="number" inputmode="decimal" value="${h.despesas}" min="0" step="1000" oninput="historico[${i}].despesas=parseFloat(this.value)||0;dirty();calcularDebounced()" style="text-align:right;font-size:12px;padding:5px 7px">
-      <input type="number" inputmode="decimal" value="${h.cota}" min="0" step="5" oninput="historico[${i}].cota=parseFloat(this.value)||0;dirty();calcularDebounced()" style="text-align:right;font-size:12px;padding:5px 7px">
-      <input type="number" inputmode="decimal" value="${h.inadimpl}" min="0" max="100" step="0.1" oninput="historico[${i}].inadimpl=parseFloat(this.value)||0;dirty();calcularDebounced()" style="text-align:right;font-size:12px;padding:5px 7px">`;
+      <input type="number" inputmode="decimal" value="${h.despesas}" min="0" step="1000" oninput="if(this.value===''||this.value==='-')return;const _v=parseFloat(this.value);if(isNaN(_v))return;historico[${i}].despesas=_v;dirty();calcularDebounced()" onchange="historico[${i}].despesas=parseFloat(this.value)||0;dirty();calcularDebounced()" style="text-align:right;font-size:12px;padding:5px 7px">
+      <input type="number" inputmode="decimal" value="${h.cota}" min="0" step="5" oninput="if(this.value===''||this.value==='-')return;const _v=parseFloat(this.value);if(isNaN(_v))return;historico[${i}].cota=_v;dirty();calcularDebounced()" onchange="historico[${i}].cota=parseFloat(this.value)||0;dirty();calcularDebounced()" style="text-align:right;font-size:12px;padding:5px 7px">
+      <input type="number" inputmode="decimal" value="${h.inadimpl}" min="0" max="100" step="0.1" oninput="if(this.value===''||this.value==='-')return;const _v=parseFloat(this.value);if(isNaN(_v))return;historico[${i}].inadimpl=_v;dirty();calcularDebounced()" onchange="historico[${i}].inadimpl=parseFloat(this.value)||0;dirty();calcularDebounced()" style="text-align:right;font-size:12px;padding:5px 7px">`;
     el.appendChild(r);
   });
 }
@@ -3541,7 +5071,7 @@ function renderRateios(){
     row.className='rat-row';
     const tipoColor=r.tipo==='por_unidade'?'var(--teal)':'var(--purple)';
     row.innerHTML=`<input type="text" value="${r.desc}" oninput="rateios[${i}].desc=this.value" placeholder="Descrição" style="font-size:12px;padding:5px 8px">
-      <input type="number" inputmode="decimal" value="${r.valor}" min="0" step="100" oninput="rateios[${i}].valor=parseFloat(this.value)||0;dirty();calcularDebounced()" style="text-align:right;font-size:12px;padding:5px 7px">
+      <input type="number" inputmode="decimal" value="${r.valor}" min="0" step="100" oninput="if(this.value===''||this.value==='-')return;const _v=parseFloat(this.value);if(isNaN(_v))return;rateios[${i}].valor=_v;dirty();calcularDebounced()" onchange="rateios[${i}].valor=parseFloat(this.value)||0;dirty();calcularDebounced()" style="text-align:right;font-size:12px;padding:5px 7px">
       <input type="number" inputmode="numeric" value="${r.parcelas}" min="1" max="120" step="1" oninput="rateios[${i}].parcelas=parseInt(this.value)||1;dirty();calcularDebounced()" style="text-align:right;font-size:12px;padding:5px 7px" title="Nº de parcelas mensais">
       <select onchange="rateios[${i}].tipo=this.value;dirty();calcular();renderRateios()" style="font-size:11px;padding:5px 4px;color:${tipoColor}">
         <option value="por_unidade"${r.tipo==='por_unidade'?' selected':''}>/ unidade</option>
@@ -3675,13 +5205,14 @@ function renderTickerReal(calcData){
   const prefs = getTickerPrefs();
   setTickerPrefs(prefs);
   const n = parseFloat(document.getElementById('n_unidades')?.value || calcData?.n || 0) || 0;
+  const nPagTicker = parseFloat(document.getElementById('n_pagantes')?.value || calcData?.nPag || n) || n;
   const cotaAtual = parseFloat(document.getElementById('cota_atual')?.value || calcData?.cotaAtual || 0) || 0;
   const cotaManualAtiva = parseFloat(localStorage.getItem('ql_cota_proposta_ativa') || '');
   const cotaManualInput = parseFloat(document.getElementById('cota_proposta_manual')?.value || '');
   const cotaCenario = Number.isFinite(cotaManualAtiva) && cotaManualAtiva > 0
     ? cotaManualAtiva
     : (Number.isFinite(cotaManualInput) && cotaManualInput > 0 ? cotaManualInput : cotaAtual);
-  const arrecAtual = n > 0 ? cotaCenario * n : 0;
+  const arrecAtual = nPagTicker > 0 ? cotaCenario * nPagTicker : 0;
   const orcamento = parseFloat(calcData?.total || calcData?.totDesp || 0) || despesas.reduce((s,d)=>s+getDespesaMensalValor(d),0);
 
   const compMap = new Map(Array.isArray(despComp)
@@ -3794,6 +5325,9 @@ function calcular(){
   const nEl=document.getElementById('n_unidades');
   if(nEl && nRaw<1){nEl.style.borderColor='var(--red)';nEl.title='Mínimo 1 unidade';}
   else if(nEl){nEl.style.borderColor='';nEl.title='';}
+  // nPag = unidades pagantes (excluindo isentos como síndico/subsíndico)
+  const nPagRaw=parseInt(document.getElementById('n_pagantes')?.value)||nRaw;
+  const nPag=Math.max(1,Math.min(nPagRaw,n));
   const cotaAtual=parseFloat(document.getElementById('cota_atual').value)||0;
   const inadPct=parseFloat(document.getElementById('inadimplencia').value);
   const frPct=parseFloat(document.getElementById('fundo_reserva').value);
@@ -3811,15 +5345,17 @@ function calcular(){
   const frV=totDesp*fr, foV=totDesp*fo;
   const sub=totDesp+frV+foV;
   const inadV=inad<1?sub*inad/(1-inad):0;
+  // rateio usa n (total unidades); cota divide por nPag (pagantes)
   const rateioMensal=calcRateioMensal(n);
   const total=sub+inadV+rateioMensal*n;
-  const cota=total/n;
+  const cota=total/nPag;
   const delta=cotaAtual>0?((cota-cotaAtual)/cotaAtual*100):null;
 
   // RATEIO DISPLAY
   document.getElementById('rateio_impacto_display').textContent=fmt(rateioMensal);
 
-  _lastCalc={n,cotaAtual,inadPct,frPct,foPct,totDesp,frV,foV,inadV,rateioMensal,total,cota,delta,condoNome,competencia,frSaldo,frMeta,frHorizonte,frTaxa,modo,sub};
+  _lastCalc={n,nPag,cotaAtual,inadPct,frPct,foPct,totDesp,frV,foV,inadV,rateioMensal,total,cota,delta,condoNome,competencia,frSaldo,frMeta,frHorizonte,frTaxa,modo,sub};
+  if(typeof syncSimEncargos==='function')syncSimEncargos();
 
   // ALERT
   const aEl=document.getElementById('alert-box'),aTxt=document.getElementById('alert-txt');
@@ -3830,7 +5366,7 @@ function calcular(){
 
   // HERO
   document.getElementById('hero_cota').textContent=fmt(cota);
-  document.getElementById('n_uni_sub').textContent=n;
+  document.getElementById('n_uni_sub').textContent=n+(nPag<n?` (${nPag} pagantes)`:'');
   document.getElementById('arrecadacao_total').textContent=fmt(total);
   document.getElementById('diff_prev_val').textContent=fmt(cotaAtual);
   document.getElementById('diff_new_val').textContent=fmt(cota);
@@ -3865,10 +5401,17 @@ function calcular(){
   document.getElementById('bk-rows').innerHTML=items.map(it=>{
     const pct=total>0?(it.v/total*100):0;
     const bdg=it.pLbl?`<span class="bdg ${it.bCls}" style="margin-left:4px">${it.pLbl}</span>`:'';
-    return `<div class="bkrow"><span class="bkdot" style="background:${it.color}"></span>
+    const tooltips={
+      'Despesas operacionais':'Representa '+pct.toFixed(1)+'% do total arrecadado necessário (base = total)',
+      'Fundo de Reserva':'Taxa de '+it.pLbl+' aplicada sobre as despesas = '+fmt(it.v)+'. Como % do total arrecadado: '+pct.toFixed(1)+'%',
+      'Fundo de Obras':'Taxa de '+it.pLbl+' aplicada sobre as despesas = '+fmt(it.v)+'. Como % do total arrecadado: '+pct.toFixed(1)+'%',
+      'Ajuste inadimplência':'Taxa de '+it.pLbl+' aplicada sobre o subtotal (desp + fundos). Como % do total arrecadado: '+pct.toFixed(1)+'%',
+    };
+    const tip=tooltips[it.lbl]||pct.toFixed(1)+'% do total arrecadado';
+    return `<div class="bkrow" title="${tip}"><span class="bkdot" style="background:${it.color}"></span>
       <span class="bkname">${it.lbl}${bdg}</span>
       <div class="bkbar"><div class="bkfill" style="width:${pct.toFixed(1)}%;background:${it.color}"></div></div>
-      <span class="bkpct">${pct.toFixed(1)}%</span><span class="bkamt" style="color:${it.color}">${fmt(it.v)}</span></div>`;
+      <span class="bkpct" title="${tip}" style="cursor:help">${pct.toFixed(1)}%</span><span class="bkamt" style="color:${it.color}">${fmt(it.v)}</span></div>`;
   }).join('');
 
   // CHART COMPOSIÇÃO
@@ -4352,6 +5895,7 @@ function exportJSON(){
     config:{
       condoNome:document.getElementById('condo_nome').value,
       nUnidades:document.getElementById('n_unidades').value,
+      nPagantes:document.getElementById('n_pagantes').value,
       cotaAtual:document.getElementById('cota_atual').value,
       competencia:document.getElementById('competencia').value,
       inadimplencia:document.getElementById('inadimplencia').value,
@@ -4383,6 +5927,7 @@ function importJSON(ev){
       const cfg=d.config;
       document.getElementById('condo_nome').value=cfg.condoNome||'';
       document.getElementById('n_unidades').value=cfg.nUnidades||40;
+      if(document.getElementById('n_pagantes')) document.getElementById('n_pagantes').value=cfg.nPagantes||cfg.nUnidades||40;
       document.getElementById('cota_atual').value=cfg.cotaAtual||850;
       document.getElementById('competencia').value=cfg.competencia||'';
       document.getElementById('inadimplencia').value=cfg.inadimplencia||5;
@@ -4538,8 +6083,8 @@ function buildAppData(){
 function applyAppData(d){
   if(!d || !d.config || !d.despesas) throw new Error('Formato inválido.');
   const cfg=d.config||{};
-  ['condo_nome','n_unidades','cota_atual','competencia'].forEach(id=>{
-    const key={condo_nome:'condoNome',n_unidades:'nUnidades',cota_atual:'cotaAtual',competencia:'competencia'}[id];
+  ['condo_nome','n_unidades','n_pagantes','cota_atual','competencia'].forEach(id=>{
+    const key={condo_nome:'condoNome',n_unidades:'nUnidades',n_pagantes:'nPagantes',cota_atual:'cotaAtual',competencia:'competencia'}[id];
     if(cfg[key]!=null) document.getElementById(id).value=cfg[key];
   });
   if(cfg.inadimplencia){document.getElementById('inadimplencia').value=cfg.inadimplencia;['inadimpl_lbl','inadimpl_val'].forEach(id=>{const el=document.getElementById(id); if(el) el.textContent=parseFloat(cfg.inadimplencia).toFixed(1)+'%';});}
@@ -6281,7 +7826,7 @@ function renderDashboard(c){
   const se=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
   animateCounter(document.getElementById('db-kpi-cota'), c.cota, v=>fmt(v));
   animateCounter(document.getElementById('db-kpi-total'), c.total, v=>fmtShort(v));
-  se('db-condo-sub', (c.condoNome||'Condomínio')+' · '+c.n+' unidades');
+  se('db-condo-sub', (c.condoNome||'Condomínio')+' · '+c.n+' unidades'+(c.nPag&&c.nPag<c.n?' · '+c.nPag+' pagantes':''));
   se('db-competencia-val', c.competencia||'—');
   se('db-gauge-atual', fmt(c.cotaAtual||0));
   se('db-timestamp', new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}));
@@ -6484,6 +8029,7 @@ function navPage(page, btn){
       if(firstPanel) firstPanel.classList.add('on');
     }
     if(page==='dashboard') renderDashboard(_lastCalc);
+    if(page==='simulacoes') setTimeout(renderSimulacoes,0);
     try{ localStorage.setItem('cdc_page', page); }catch(e){}
   }
   if(current && current.id !== 'page-'+page){
@@ -6559,6 +8105,7 @@ function buildShareState(){
     config:{
       condoNome:     document.getElementById('condo_nome').value,
       nUnidades:     document.getElementById('n_unidades').value,
+      nPagantes:     document.getElementById('n_pagantes').value,
       cotaAtual:     document.getElementById('cota_atual').value,
       competencia:   document.getElementById('competencia').value,
       inadimplencia: document.getElementById('inadimplencia').value,
@@ -6696,6 +8243,7 @@ function compartilharEmail(){
     const cfg = d.config;
     document.getElementById('condo_nome').value     = cfg.condoNome||'';
     document.getElementById('n_unidades').value     = cfg.nUnidades||40;
+    if(document.getElementById('n_pagantes')) document.getElementById('n_pagantes').value = cfg.nPagantes||cfg.nUnidades||40;
     document.getElementById('cota_atual').value     = cfg.cotaAtual||850;
     document.getElementById('competencia').value    = cfg.competencia||'';
     document.getElementById('inadimplencia').value  = cfg.inadimplencia||5;
@@ -6750,6 +8298,7 @@ function importarEstadoCompartilhado(d){
   const cfg = d.config||{};
   document.getElementById('condo_nome').value     = cfg.condoNome||'';
   document.getElementById('n_unidades').value     = cfg.nUnidades||40;
+  if(document.getElementById('n_pagantes')) document.getElementById('n_pagantes').value = cfg.nPagantes||cfg.nUnidades||40;
   document.getElementById('cota_atual').value     = cfg.cotaAtual||850;
   document.getElementById('competencia').value    = cfg.competencia||'';
   document.getElementById('inadimplencia').value  = cfg.inadimplencia||5;
@@ -7543,6 +9092,10 @@ function restaurarUltimo(){
     <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
     Análises
   </button>
+  <button class="bnav-item" id="bnav-simulacoes" onclick="navPage('simulacoes',null);updateBNav('simulacoes')">
+    <svg viewBox="0 0 24 24"><polyline points="7 10 10 7 13 10 17 6"/><rect x="2" y="3" width="20" height="14" rx="2"/></svg>
+    Simulações
+  </button>
   <button class="bnav-item bnav-dados role-conselho-up" id="bnav-dados" onclick="openDrawer()">
     <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
     Dados
@@ -7984,5 +9537,43 @@ document.querySelectorAll('.faq-question').forEach(q=>{
   </div>
 </div>
 
+
+<!-- ══ MODAL: COMUNICADO PDF ══ -->
+<div class="modal-bg" id="modal-comunicado" onclick="if(event.target===this)closeComunicadoModal()">
+  <div class="comunicado-modal-inner" onclick="event.stopPropagation()">
+    <div class="comunicado-modal-hdr">
+      <div><div style="font-family:'DM Serif Display',serif;font-size:17px;">📄 Comunicado para moradores</div><div style="font-size:11px;color:var(--text3);margin-top:2px;">Configure e visualize antes de gerar o PDF</div></div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button onclick="gerarComunicadoPdf()" style="display:flex;align-items:center;gap:6px;padding:8px 18px;background:var(--blue2);color:#fff;border:none;border-radius:var(--rs);font-size:12px;font-weight:600;cursor:pointer;"><svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Baixar PDF</button>
+        <button onclick="closeComunicadoModal()" style="background:none;border:1px solid var(--border);border-radius:var(--rs);color:var(--text2);cursor:pointer;width:30px;height:30px;font-size:18px;display:flex;align-items:center;justify-content:center;">×</button>
+      </div>
+    </div>
+    <div class="comunicado-modal-body">
+      <div class="comunicado-controls">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:10px;">Informações</div>
+        <div class="com-field"><label>Nome do condomínio</label><input type="text" id="com-nome" placeholder="Ex: Residencial das Flores" oninput="renderComunicadoPreview()"></div>
+        <div class="com-field"><label>Competência</label><input type="month" id="com-competencia" oninput="renderComunicadoPreview()"></div>
+        <div class="com-field"><label>Assinatura</label><input type="text" id="com-assinatura" placeholder="Nome do síndico" oninput="renderComunicadoPreview()"></div>
+        <div style="height:1px;background:var(--border);margin:12px 0;"></div>
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:10px;">Seções</div>
+        <div class="com-section-toggle"><input type="checkbox" id="com-show-desp" checked onchange="renderComunicadoPreview()"><label for="com-show-desp">📊 Despesas detalhadas</label></div>
+        <div class="com-section-toggle"><input type="checkbox" id="com-show-cenarios" checked onchange="renderComunicadoPreview()"><label for="com-show-cenarios">🔀 Comparativo de cenários</label></div>
+        <div class="com-section-toggle"><input type="checkbox" id="com-show-rec" checked onchange="renderComunicadoPreview()"><label for="com-show-rec">⭐ Cota recomendada no comparativo</label></div>
+        <div class="com-section-toggle"><input type="checkbox" id="com-show-destaque" checked onchange="renderComunicadoPreview()"><label for="com-show-destaque">💰 Destaque impacto/unidade</label></div>
+        <div class="com-section-toggle"><input type="checkbox" id="com-show-assembleia" checked onchange="renderComunicadoPreview()"><label for="com-show-assembleia">📅 Data da assembleia</label></div>
+        <div class="com-section-toggle"><input type="checkbox" id="com-show-obs" onchange="renderComunicadoPreview()"><label for="com-show-obs">📝 Observação do síndico</label></div>
+        <div class="com-section-toggle"><input type="checkbox" id="com-show-extras" onchange="renderComunicadoPreview()"><label for="com-show-extras">➕ Extras simulados</label></div>
+        <div class="com-section-toggle"><input type="checkbox" id="com-show-composicao" checked onchange="renderComunicadoPreview()"><label for="com-show-composicao">📐 Composição da cota</label></div>
+        <div class="com-section-toggle"><input type="checkbox" id="com-show-retro" onchange="renderComunicadoPreview()"><label for="com-show-retro">📅 Histórico de reajuste</label></div>
+        <div class="com-section-toggle"><input type="checkbox" id="com-show-justif" onchange="renderComunicadoPreview()"><label for="com-show-justif">📋 Justificativa dos índices</label></div>
+        <div style="height:1px;background:var(--border);margin:12px 0;"></div>
+        <div class="com-field" id="com-assembleia-fields"><label>Data da assembleia</label><input type="date" id="com-assembleia-data" oninput="renderComunicadoPreview()"><label style="margin-top:6px;">Local</label><input type="text" id="com-assembleia-local" placeholder="Ex: Salão de festas" oninput="renderComunicadoPreview()"></div>
+        <div class="com-field" id="com-obs-field" style="display:none;"><label>Observação</label><textarea id="com-obs-text" placeholder="Mensagem adicional..." oninput="renderComunicadoPreview()"></textarea></div>
+        
+      </div>
+      <div class="comunicado-preview-wrap"><div class="comunicado-a4" id="comunicado-a4-preview"></div></div>
+    </div>
+  </div>
+</div>
 </body>
 </html>
