@@ -1,9 +1,10 @@
 {
+  "id": "/quotalab/",
   "name": "QuotaLab — Gestão Condominial",
   "short_name": "QuotaLab",
   "description": "Laboratório de análise condominial: simulações, cota calculada, comunicados e muito mais.",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "/quotalab/",
+  "scope": "/quotalab/",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#0a0a0f",
@@ -26,14 +27,14 @@
       "name": "Simulações",
       "short_name": "Simular",
       "description": "Abrir simulações de reajuste",
-      "url": "/?page=simulacoes",
+      "url": "/quotalab/?page=simulacoes",
       "icons": [{ "src": "icons/icon-192x192.png", "sizes": "192x192" }]
     },
     {
       "name": "Dashboard",
       "short_name": "Dashboard",
       "description": "Abrir painel principal",
-      "url": "/?page=dashboard",
+      "url": "/quotalab/?page=dashboard",
       "icons": [{ "src": "icons/icon-192x192.png", "sizes": "192x192" }]
     }
   ]
